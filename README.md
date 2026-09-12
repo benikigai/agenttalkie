@@ -46,4 +46,4 @@ Inject credentials through your secret manager. Never commit `.env` files, token
 
 The [CopilotKit Agents Everywhere starter](https://github.com/CopilotKit/agents-everywhere-starter-kit), MIT, at `86f547d74e8bd32e047226b0e1fb862cca02a5c7`. `STARTER-PROVENANCE.json` records the inherited snapshot and local baseline. AgentTalkie's workflow and interface are event work after that baseline. Pearl's persistent-dock interaction informed the design; its branding, media and application are not included.
 
-The original starter setup documentation is retained in `docs/starter.md` when this publication package is integrated.
+The original starter setup documentation is retained in `docs/starter.md`.
