@@ -37,7 +37,15 @@ async function request(path: string, body?: unknown, signal?: AbortSignal): Prom
   return data;
 }
 
+const liveSessions = new Set<string>();
+export async function liveAuthentication() { return await request("/api/agenttalkie/live/auth") as {authenticated: boolean}; }
+export async function unlockLive(password: string) { return request("/api/agenttalkie/live/auth", {password}); }
+export async function delegateVoice(sessionId: string, delegationId: string, transcript: {role: "user" | "assistant"; text: string}[]) {
+ return request("/api/agenttalkie/live/delegation",{sessionId,delegationId,transcript});
+}
+
 export async function createSession(mode: "fixture" | "live", signal?: AbortSignal) {
+  if (mode === "live") { const result = SessionSnapshotSchema.parse(await request("/api/agenttalkie/live/session", undefined, signal)); liveSessions.add(result.session.id); return result; }
   const bootstrap = SessionBootstrapSchema.parse(await request(AGENTTALKIE_ROUTES.session, undefined, signal));
   if (bootstrap.persistence === "client_fixture") {
     if (mode !== "fixture") throw new AgentTalkieApiError("PUBLIC_DEMO_FIXTURE_ONLY", "The public demo supports fixture sessions only.");
@@ -47,21 +55,25 @@ export async function createSession(mode: "fixture" | "live", signal?: AbortSign
 }
 
 export async function readSession(sessionId: string, signal?: AbortSignal) {
+  if (liveSessions.has(sessionId)) return SessionSnapshotSchema.parse(await request(`/api/agenttalkie/live/session?sessionId=${encodeURIComponent(sessionId)}`,undefined,signal));
   if (hasClientFixtureSession(sessionId)) return clientFixture(() => readClientFixtureSession(sessionId));
   return SessionSnapshotSchema.parse(await request(`${AGENTTALKIE_ROUTES.session}?sessionId=${encodeURIComponent(sessionId)}`, undefined, signal));
 }
 
 export async function submitQuestion(sessionId: string, question: WorkerRequest) {
+  if (liveSessions.has(sessionId)) return SessionSnapshotSchema.parse(await request("/api/agenttalkie/live/requests",{sessionId,...question}));
   if (hasClientFixtureSession(sessionId)) return clientFixture(() => submitClientFixtureQuestion(sessionId, question));
   return SessionSnapshotSchema.parse(await request(AGENTTALKIE_ROUTES.requests, { sessionId, ...question }));
 }
 
 export async function endSession(sessionId: string) {
+  if (liveSessions.has(sessionId)) return SessionSnapshotSchema.parse(await request("/api/agenttalkie/live/session",{sessionId}));
   if (hasClientFixtureSession(sessionId)) return clientFixture(() => endClientFixtureSession(sessionId));
   return SessionSnapshotSchema.parse(await request(AGENTTALKIE_ROUTES.session, { operation: "end", sessionId }));
 }
 
 export async function prepareFollowup(sessionId: string, requestId: string, revision: number, scope: string) {
+  if (liveSessions.has(sessionId)) { const body=await request("/api/agenttalkie/live/followup",{sessionId,requestId,revision,scope}); return z.object({followup:PreparedFollowupSchema}).parse(body).followup; }
   if (hasClientFixtureSession(sessionId)) return clientFixture(() => prepareClientFixtureFollowup(sessionId, requestId, revision, scope));
   const schema = z.object({ followup: PreparedFollowupSchema });
   return schema.parse(await request(AGENTTALKIE_ROUTES.followup, { sessionId, requestId, revision, scope })).followup;

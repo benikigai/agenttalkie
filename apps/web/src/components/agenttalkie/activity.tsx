@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { activityLedgerSchema, orderActivityEvents, type ActivityEvent } from "@/lib/agenttalkie-activity";
 import type { RequestRecord } from "@/lib/agenttalkie-contract";
+import { useAgentTalkie } from "./provider";
 import { Icon } from "./icons";
 
 const providerNames = { agenttalkie: "AgentTalkie", ambiguous: "Ambiguous", exa: "Exa Code Context", ori: "Ori / OpenRouter" } as const;
@@ -34,25 +35,30 @@ function fixtureEvent(request: RequestRecord | null): ActivityEvent | null {
 }
 
 export function ActivityDrawer({ open, onClose, currentRequest }: { open: boolean; onClose: () => void; currentRequest: RequestRecord | null }) {
+  const workspace = useAgentTalkie();
+  const live=workspace.snapshot.session.mode==="live";
+  const sessionId=workspace.snapshot.session.id;
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!open || events.length > 0) return;
+    if (!open) return;
     const controller = new AbortController();
-    setLoading(true); setError(null);
-    void fetch("/api/agenttalkie/activity", { signal: controller.signal, headers: { Accept: "application/json" } })
+    setEvents([]); setLoading(true); setError(null);
+    const refresh = () => fetch(live ? `/api/agenttalkie/live/activity?sessionId=${sessionId}` : "/api/agenttalkie/activity", { signal: controller.signal, headers: { Accept: "application/json" } })
       .then(async (response) => {
         const body: unknown = await response.json();
         if (!response.ok) throw new Error("Activity evidence could not be loaded.");
         return activityLedgerSchema.parse(body);
       })
-      .then((ledger) => setEvents(ledger.events))
+      .then((ledger) => { if (!controller.signal.aborted) {setEvents(ledger.events);setError(null);} })
       .catch((cause) => { if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Activity evidence could not be loaded."); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
-    return () => controller.abort();
-  }, [open, events.length]);
+    void refresh();
+    const timer=live?setInterval(()=>void refresh(),1500):undefined;
+    return () => {controller.abort();clearInterval(timer);};
+  }, [open, live, sessionId]);
 
   useEffect(() => {
     if (!open) return;
@@ -62,9 +68,9 @@ export function ActivityDrawer({ open, onClose, currentRequest }: { open: boolea
   }, [open, onClose]);
 
   const rows = useMemo(() => {
-    const fixture = fixtureEvent(currentRequest);
+    const fixture = live ? null : fixtureEvent(currentRequest);
     return orderActivityEvents(fixture ? [...events, fixture] : events).reverse();
-  }, [events, currentRequest]);
+  }, [events, currentRequest, live]);
 
   if (!open) return null;
   return <div className="at-activity-layer" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>

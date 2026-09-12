@@ -50,7 +50,7 @@ export interface LiveVoiceCallbacks {
 }
 
 export interface LiveVoiceController {
-  start(sessionId: string): Promise<void>;
+  start(sessionId: string, endpoint?: string): Promise<void>;
   mute(muted: boolean): void;
   end(): Promise<void>;
   appendCommentary(update: {
@@ -305,7 +305,7 @@ export function createLiveVoiceController(callbacks: LiveVoiceCallbacks = {}): L
     });
   }
 
-  async function connect(run: Connection, sessionId: string) {
+  async function connect(run: Connection, sessionId: string, endpoint: string) {
     try {
       if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === "undefined") {
         throw new Error("Voice needs a supported browser on HTTPS or localhost.");
@@ -357,7 +357,7 @@ export function createLiveVoiceController(callbacks: LiveVoiceCallbacks = {}): L
       const sdp = peer.localDescription?.sdp;
       if (!sdp) throw new Error("The browser could not prepare an audio connection.");
       run.creationRequested = true;
-      const response = await fetch(AGENTTALKIE_ROUTES.voice, {
+      const response = await fetch(endpoint, {
         method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId, sdp }), signal: run.abort.signal,
@@ -385,7 +385,7 @@ export function createLiveVoiceController(callbacks: LiveVoiceCallbacks = {}): L
 
   return {
     getState: () => ({ ...state }),
-    start(sessionId) {
+    start(sessionId, endpoint = AGENTTALKIE_ROUTES.voice) {
       if (connection?.closing) return Promise.reject(new Error("The previous voice connection is still ending."));
       if (connection) return connection.startPromise ?? Promise.resolve();
       let resolveReady!: () => void;
@@ -402,7 +402,7 @@ export function createLiveVoiceController(callbacks: LiveVoiceCallbacks = {}): L
       connection = run;
       update({ status: "connecting", muted: false, liveSessionId: null, playbackBlocked: false, closeConfirmed: false, error: null });
       run.timeout = setTimeout(() => fail(run, "Voice connection timed out. Check microphone permission and try again."), 30_000);
-      void connect(run, sessionId);
+      void connect(run, sessionId, endpoint);
       run.startPromise = readyPromise;
       return readyPromise;
     },

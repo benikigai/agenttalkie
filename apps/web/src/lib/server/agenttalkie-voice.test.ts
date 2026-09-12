@@ -171,3 +171,26 @@ test("malformed upstream JSON remains a provider error and is never retried", as
   await error(await handler(request(sessionId)), 409, "VOICE_ALREADY_ATTEMPTED");
   assert.equal(calls.length, 1);
 });
+
+test("durable offer claims reject replay across handlers and allow an explicit fresh connection", async () => {
+  const service = new AgentTalkieService({ adapters: [] });
+  const sessionId = service.create(owner,"live").session.id;
+  const claims = new Set<string>();
+  let calls = 0;
+  const make = () => createAgentTalkieVoiceHandler({
+    service, enabled:()=>true, apiKey:()=>fakeKey,
+    claim:async (_owner,id,hash)=>{
+      await Promise.resolve();
+      const key=`${id}:${hash}`;
+      if(claims.has(key)) throw new (await import("./agenttalkie-service")).AgentTalkieError(409,"VOICE_ALREADY_ATTEMPTED","Already attempted");
+      claims.add(key);
+    },
+    fetch:async()=>{calls++;return Response.json({session:{id:"offline-provider-session"},transport:{type:"webrtc",sdp:answer}});},
+  });
+  const handler=make();
+  const replies=await Promise.all([handler(request(sessionId)),handler(request(sessionId))]);
+  assert.deepEqual(replies.map(r=>r.status).sort(),[201,409]);
+  await error(await make()(request(sessionId)),409,"VOICE_ALREADY_ATTEMPTED");
+  assert.equal((await handler(request(sessionId,{sessionId,sdp:offer+"a=ice-ufrag:new-connection\r\n"}))).status,201);
+  assert.equal(calls,2);
+});
