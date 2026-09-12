@@ -10,12 +10,8 @@
  * Component.
  */
 import { CopilotKitProvider } from "@copilotkit/react-core/v2";
-import { usePathname } from "next/navigation";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  // AgentTalkie's session API is independent of the inherited incident runtime.
-  if (pathname === "/") return <>{children}</>;
   // `runtimeUrl` points at the Hono handler in app/api/copilotkit.
   // If you switch that handler to `mode: "single-route"`, you must also set
   // `useSingleEndpoint` here — the two settings have to agree.
