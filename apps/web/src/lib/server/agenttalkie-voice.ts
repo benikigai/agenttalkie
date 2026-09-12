@@ -46,7 +46,10 @@ export function createAgentTalkieVoiceHandler(options: {
       } catch {
         throw new AgentTalkieError(502, "VOICE_DELIVERY_UNKNOWN", "The voice provider did not return a usable response. Session creation is uncertain; no retry was sent.");
       }
-      if (!response.ok) throw new AgentTalkieError(502, "VOICE_PROVIDER_REJECTED", "The voice provider rejected session creation. Check account access and server configuration.");
+      if (!response.ok) {
+        console.warn("AgentTalkie voice broker rejected", {status:response.status,requestId:response.headers.get("x-request-id")});
+        throw new AgentTalkieError(502, "VOICE_PROVIDER_REJECTED", `The voice provider rejected session creation (HTTP ${response.status}). Check account access and server configuration.`);
+      }
       const parsed = providerResponse.safeParse(await response.json().catch(() => null));
       if (!parsed.success) throw new AgentTalkieError(502, "VOICE_RESPONSE_INVALID", "The voice provider returned an invalid session response. No retry was sent.");
       return jsonReply(VoiceConnectionSchema.parse({ sessionId: parsed.data.session.id, provider: "openai", model: "gpt-live-1", sdp: parsed.data.transport.sdp }), 201);
