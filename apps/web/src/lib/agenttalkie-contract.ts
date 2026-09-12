@@ -76,6 +76,16 @@ export const SessionSnapshotSchema = z.object({
   currentResult: WorkerResultSchema.nullable(),
   targets: z.array(AgentTargetSchema),
 }).strict();
+export const SessionBootstrapSchema = z.object({
+  contractVersion: z.literal(AGENTTALKIE_CONTRACT_VERSION),
+  targets: z.array(AgentTargetSchema),
+  persistence: z.enum(["local_process", "client_fixture"]),
+  voice: z.object({
+    provider: z.literal("openai"),
+    model: z.literal("gpt-live-1"),
+    status: z.literal("unverified"),
+  }).strict(),
+}).strict();
 export const SessionCommandSchema = z.discriminatedUnion("operation", [
   z.object({ operation: z.literal("create"), mode: z.enum(["fixture", "live"]).default("fixture") }).strict(),
   z.object({ operation: z.literal("end"), sessionId: z.uuid() }).strict(),
@@ -102,6 +112,7 @@ export type RequestRecord = z.infer<typeof RequestRecordSchema>;
 export type PreparedFollowup = z.infer<typeof PreparedFollowupSchema>;
 export type VoiceSession = z.infer<typeof VoiceSessionSchema>;
 export type SessionSnapshot = z.infer<typeof SessionSnapshotSchema>;
+export type SessionBootstrap = z.infer<typeof SessionBootstrapSchema>;
 
 // TOOLS implements this boundary. Targets come from trusted server configuration.
 export interface AgentTalkieAdapter {

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   AGENTTALKIE_CONTRACT_VERSION, ApiErrorSchema, PreparedFollowupSchema,
-  SessionSnapshotSchema, type AgentTalkieAdapter, type WorkerOutcome, type WorkerRequest,
+  SessionBootstrapSchema, SessionSnapshotSchema, type AgentTalkieAdapter, type WorkerOutcome, type WorkerRequest,
 } from "../agenttalkie-contract";
 import {
   agenttalkieFixtureRequest, agenttalkieFixtureResult, agenttalkieFixtureTarget,
@@ -30,14 +30,14 @@ function completed(request: WorkerRequest): WorkerOutcome {
   } };
 }
 
-function harness(execute: AgentTalkieAdapter["execute"] = async (request) => completed(request)) {
+function harness(execute: AgentTalkieAdapter["execute"] = async (request) => completed(request), publicDemoOrigins: readonly string[] = []) {
   const calls: WorkerRequest[] = [];
   const jobs: (() => Promise<void>)[] = [];
   const service = new AgentTalkieService({ adapters: [{
     targets: [agenttalkieFixtureTarget],
     execute(request) { calls.push(structuredClone(request)); return execute(request); },
   }] });
-  const handlers = createAgentTalkieHandlers({ service, after: (job) => { jobs.push(job); } });
+  const handlers = createAgentTalkieHandlers({ service, after: (job) => { jobs.push(job); }, publicDemoOrigins });
   const initial = service.create(owner, "fixture");
   const input = { ...agenttalkieFixtureRequest, sessionId: initial.session.id };
   return { service, handlers, initial, input, calls, jobs };
@@ -79,6 +79,37 @@ test("loopback bootstrap accepts IPv4, IPv6, and localhost and secures HTTPS coo
     assert.equal(response.status, 200, address);
     assert.equal(response.headers.get("set-cookie")!.includes("; Secure"), address.startsWith("https:"));
   }
+});
+
+test("an exact configured public origin delegates fixture state to the client and blocks server mutations", async () => {
+  const publicOrigin = "https://agenttalkie.app";
+  const { handlers, input, calls } = harness(async (request) => completed(request), [publicOrigin]);
+  const bootstrap = await handlers.session(new Request(`${publicOrigin}/api/agenttalkie/session`));
+  assert.equal(bootstrap.status, 200);
+  assert.equal(SessionBootstrapSchema.parse(await bootstrap.clone().json()).persistence, "client_fixture");
+  const browserCookie = bootstrap.headers.get("set-cookie")!.split(";")[0];
+  const fixture = await handlers.session(new Request(`${publicOrigin}/api/agenttalkie/session`, {
+    method: "POST",
+    headers: { origin: publicOrigin, cookie: browserCookie, "content-type": "application/json" },
+    body: JSON.stringify({ operation: "create", mode: "fixture" }),
+  }));
+  await error(fixture, 409, "PUBLIC_DEMO_CLIENT_ONLY");
+  const live = await handlers.session(new Request(`${publicOrigin}/api/agenttalkie/session`, {
+    method: "POST",
+    headers: { origin: publicOrigin, cookie: browserCookie, "content-type": "application/json" },
+    body: JSON.stringify({ operation: "create", mode: "live" }),
+  }));
+  await error(live, 403, "PUBLIC_DEMO_FIXTURE_ONLY");
+  await error(await handlers.session(new Request(`${publicOrigin}/api/agenttalkie/session?sessionId=${input.sessionId}`, {
+    headers: { cookie: browserCookie },
+  })), 409, "PUBLIC_DEMO_CLIENT_ONLY");
+  await error(await handlers.requests(new Request(`${publicOrigin}/api/agenttalkie/requests`, {
+    method: "POST",
+    headers: { origin: publicOrigin, cookie: browserCookie, "content-type": "application/json" },
+    body: JSON.stringify(input),
+  })), 409, "PUBLIC_DEMO_CLIENT_ONLY");
+  assert.equal(calls.length, 0);
+  await error(await handlers.session(new Request("https://other.example/api/agenttalkie/session")), 403, "LOCAL_ONLY");
 });
 
 test("browser origin and Host restrictions reject requests before worker execution", async () => {

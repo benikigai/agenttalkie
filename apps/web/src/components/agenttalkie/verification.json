@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-12T20:24:28.796176+00:00",
+  "updatedAt": "2026-09-12T20:56:04Z",
   "mode": "fixture",
-  "baseCommit": "ecbba31007e6f1f59954472e52e429b74f1702ef",
+  "baseCommit": "a2da32627c0a23cc17fca61401b25d80ea4cffad",
   "uncommitted": true,
   "checks": {
     "webTypecheck": "passed",
@@ -12,7 +12,9 @@
       "live existing-worker answer",
       "automatic transcript-to-request assembly",
       "live-mode entry and provider entitlement",
-      "provider cleanup after cancelled session creation"
+      "provider cleanup after cancelled session creation",
+      "AgentTalkie CopilotKit runtime: /api/copilotkit/info returns typed 500 because OPENAI_API_KEY is unavailable; Backend prompt/provider boundary pending",
+      "Production client-fixture end-to-end verification after the serverless repair"
     ],
     "priorBrowserBaseline": [
       "shared Next runtime at http://127.0.0.1:3100",
@@ -34,26 +36,58 @@
       "Pending local microphone test cancelled without ending workspace; subsequent fixture question succeeded",
       "Backend independent final browser check:1265x720 override,client1250x720,promptsbottom458.8,docktop484.8,26pxclearance; Demo worker retained and idle End visible. Mobile390x844 client375=scroll375, final content reachable."
     ],
-    "audioMeterTests": 2
+    "voiceRailSource": [
+      "Compact rail occupies a reserved viewport row below the scrollable workspace",
+      "One canvas band draws measured microphone input and remote output around a shared flat silence line",
+      "Listening and Speaking labels depend on measured RMS activity",
+      "Fixture primary action is explicitly labeled Check mic; live primary action is Start voice"
+    ],
+    "audioMeterTests": 2,
+    "copilotBridgeTests": 2,
+    "clientFixtureTests": 2,
+    "allWebTests": 162,
+    "publicFixtureBoundary": [
+      "Exact configured HTTPS origins receive an explicit client_fixture bootstrap capability",
+      "Fixture session, correction, idempotency, unavailable worker, prepared follow-up, and end state remain inside the browser tab",
+      "Public server session mutations are rejected and cannot reach a worker adapter",
+      "Public live session creation and provider voice remain blocked"
+    ],
+    "copilotBridge": [
+      "Root route mounts inside the installed CopilotKit v2 provider",
+      "Bounded serializable context includes exact selected target, session, current request/revision, attributed result/evidence summary, and prepared-not-sent state",
+      "Zod frontend tools validate exact allowed target, ask/correct state, and current result identity before using existing commands",
+      "Prepared action returns the server-confirmed record and explicitly reports not sent and not saved",
+      "Browser workspace mounts without CopilotKit console errors; no generic sidebar or parallel state UI"
+    ]
   },
   "sourceSha256": {
-    "apps/web/src/app/agenttalkie.css": "844fe6b9e6f0d3451698dc527b30ca2bf2b5f6dc70a7bd6f9ed6c9fc1b78029c",
-    "apps/web/src/app/layout.tsx": "b37a74d32ae739300828d7155f859d3c416335d870d2e84b666a09bf20002d1a",
+    "apps/web/src/app/agenttalkie.css": "23252e70083a246acf0f64371c74ed67f5aae889d4368df174e53278d4daa9c5",
+    "apps/web/src/app/layout.tsx": "3ec43d9a86f4b4c95f870f44cf5498a63548eb153fb084d32b2acbfbbf372ba5",
     "apps/web/src/app/page.tsx": "1e47c9be1239aff7723cbbf5f2d305ae47cb05b08ad6704daee5ba3db8f9ee73",
     "apps/web/src/components/agenttalkie/icons.tsx": "888946195b7d4d364c48ca63356811b0b2cfb5ca82b07c60fb20c62925c0d1c0",
-    "apps/web/src/components/agenttalkie/provider.tsx": "daa3a9bdf76ac3993a3c0d66e7c4a00022ede10e85af21d8a8a629fe3432dd87",
+    "apps/web/src/components/agenttalkie/provider.tsx": "c9d4af45dba16f10fe561252b73cb706a6736aa02d817b31f28b6bc4fab0195f",
+    "apps/web/src/components/agenttalkie/copilot-bridge.tsx": "4a26a259253fbcdaa910a152a4354f38b179daae15141c4d9b7ef4d4a128efd1",
     "apps/web/src/components/agenttalkie/shell.tsx": "12ba9e0d61ebff3e7ee6ffcd5e7e36fc90eea16aa25f60c9fd18532d83c3351e",
-    "apps/web/src/components/agenttalkie/voice-dock.tsx": "1bdb0050b53a620e518f60669f44f69ab73599d33e3effba0cd1d07bc282755c",
+    "apps/web/src/components/agenttalkie/voice-dock.tsx": "e3429de716dc77b5f7b2b6842ecc6500f84fe53f598747db9cfb1dd84be6ff64",
     "apps/web/src/components/agenttalkie/workspace.tsx": "5af036c53820709807714dd9a994c93e6e8d1885d1323c75deb82dae6bfdd2f4",
     "apps/web/src/components/agenttalkie-state.test.ts": "e59a8891193411d4630cca34fdf529f6b54546bce2f4d1d6dc7f2f5bd81d3dd8",
-    "apps/web/src/components/providers.tsx": "e0d4b2bbddd754367defa519ed38f891b03d890585d797b229054add1fa8cd1e",
-    "apps/web/src/lib/agenttalkie-contract.ts": "7c7324f7f425bbea76bd6536d0b33552b494c9ac7e214c78c9a8b60a60545768",
+    "apps/web/src/components/providers.tsx": "b6918152aa7854ded1dd2363da48ed51a05a8f42ef23837d1428b99547177fb2",
+    "apps/web/src/lib/agenttalkie-copilot.ts": "8986b5a51a8b9b62be4414a732aae8b61f664f06ee15addd983242bbf5ba1b75",
+    "apps/web/src/lib/agenttalkie-copilot.test.ts": "b226147a94febbc2e38bdddaa8659be3b5670ec5f2abe92ea11f4bb5a6eaeccb",
+    "apps/web/src/lib/agenttalkie-contract.ts": "a1b462935ae90b62e4e68c926523910ddfbead0c986da609b900aab4522e65cc",
     "apps/web/src/lib/agenttalkie-fixture.ts": "fefbe92d39d6457510b5d25c40a471e29d00eb1a83d3d5c586997daae87c5a3f",
-    "apps/web/src/lib/client/agenttalkie-api.ts": "b5e458eaaac650b5c204b64312bff445faaf3ef6d9ce71a0fa93587ef6fd33bd",
+    "apps/web/src/lib/client/agenttalkie-api.ts": "75de66e2bddbd74d20bd6d573dae274e4e0396bc8996e6b832672d8d8e48f6b3",
+    "apps/web/src/lib/client/agenttalkie-fixture-client.ts": "0ccea8de428ce6b1ee6a072a1ed97bff10035f09e4e66659b09250f6a636950c",
+    "apps/web/src/lib/agenttalkie-fixture-client.test.ts": "81875901c8f4c98648356e68d3c46f2e997eb0f8225935e415da609ad0ff2a09",
+    "apps/web/src/lib/server/agenttalkie-http.ts": "7e5a71346fac42000759beccd9adcc6b168f0496ae7cb1e55a9cfc17a9042bc0",
+    "apps/web/src/lib/server/agenttalkie-http.test.ts": "10827a45ddbd67a5e797132e6e059092a31034163e57722d068f9f37b42c84dd",
+    "apps/web/src/app/api/agenttalkie/session/route.ts": "5e8529daa03c8662bbf2ec1095966c8d1772c4095158ba7d77b4836d1030c474",
+    "apps/web/src/app/api/agenttalkie/requests/route.ts": "6cfc260d6e8581c7cca82b3df7d71daba7fc327c47252d98f40b8cf930268f49",
+    "apps/web/src/app/api/agenttalkie/followup/route.ts": "8bb6696bcdb2d2c84a71d348a6580258d838f700bac09ca9389d33bcfb281dcb",
     "apps/web/src/lib/client/agenttalkie-state.ts": "194d7d50f72b54d4f807bb8e32bcc9ba8947e0bd2ce36a4cee7458905742efb1",
     "apps/web/src/lib/voice/live-controller.test.ts": "61afe608951389a1b63b686e4b11dab00d6fcf9fcd6279ba44b199720863e7f4",
     "apps/web/src/lib/voice/live-controller.ts": "74c37081c33dc249f98e36966f723d65a775fa2b92bac9edd8eec6e671000da2",
-    "apps/web/src/components/agenttalkie/sound-bar.tsx": "0937155f1d1b5b16ebea9537c62fc684d0c99325b03b48d4c1caf0c721016da4",
+    "apps/web/src/components/agenttalkie/sound-bar.tsx": "0ef583e6b9f29cbcf178569b5894a9b1001ef974a8aa78e104c6a8d7ba30b66e",
     "apps/web/src/lib/voice/audio-meter.ts": "0cc3b2fbe6427b92a321e6b1652e443a146c80c7a0f216533fb6a772d3f481fd",
     "apps/web/src/lib/voice/audio-meter.test.ts": "960f16400ae3231b85964f87b189fda1faad1a2772e831aa0bebecc91435b149"
   }
