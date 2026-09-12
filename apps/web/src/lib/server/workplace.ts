@@ -183,10 +183,15 @@ export class AmbiguousWorkplace implements Workplace {
     } while (cursor);
     return records;
   }
+  async browse() {
+    const result = z.object({ data: z.array(z.unknown()), has_more: z.boolean() })
+      .parse(await this.call("list_tasks", { limit: 20 }));
+    return { tasks: result.data.map(task), hasMore: result.has_more };
+  }
 }
 
 export function configuredWorkplace(apiKey = process.env.AMBIGUOUS_API_KEY): {
-  workplace: Workplace;
+  workplace: AmbiguousWorkplace;
   close(): Promise<void>;
 } {
   if (!apiKey?.trim())

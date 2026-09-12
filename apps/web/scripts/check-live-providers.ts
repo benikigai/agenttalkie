@@ -6,7 +6,7 @@ async function main(){
  const owner=`provider-check:${randomUUID()}`;
  try{
   const {session}=await restore(owner);
-  for(const question of ["Read the selected demo task and tell me what is blocking it.","Find public code examples for preserving a selected task during a browser WebRTC reconnect."]){
+  for(const question of ["List my actual Ambiguous workspace tasks.","Read the selected demo task and tell me what is blocking it.","Find public code examples for preserving a selected task during a browser WebRTC reconnect."]){
    const intent=await interpret([{role:"user",text:question}],null);
    console.log("Interpreter action:",intent.action, intent.action === "clarify" ? intent.question : "");
    const request={requestId:randomUUID(),revision:1,projectId:liveTarget.projectId,agentId:liveTarget.agentId,workerSessionId:liveTarget.workerSessionId,question};
@@ -17,6 +17,7 @@ async function main(){
    assert.equal(current.state,"completed");
   }
  }finally{
+  await sql()`DELETE FROM agenttalkie_workspace_context WHERE owner=${owner}`;
   await sql()`DELETE FROM agenttalkie_events WHERE owner=${owner}`;
   await sql()`DELETE FROM agenttalkie_threads WHERE owner=${owner}`;
  }

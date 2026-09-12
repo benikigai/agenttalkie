@@ -72,6 +72,16 @@ export async function endSession(sessionId: string) {
   return SessionSnapshotSchema.parse(await request(AGENTTALKIE_ROUTES.session, { operation: "end", sessionId }));
 }
 
+export async function resetSession(sessionId: string, mode: "fixture" | "live", clear: boolean) {
+  if (mode === "live") {
+    const next=SessionSnapshotSchema.parse(await request("/api/agenttalkie/live/session",{sessionId,operation:clear?"clear":"new"}));
+    liveSessions.add(next.session.id);
+    return next;
+  }
+  await endSession(sessionId);
+  return createSession("fixture");
+}
+
 export async function prepareFollowup(sessionId: string, requestId: string, revision: number, scope: string) {
   if (liveSessions.has(sessionId)) { const body=await request("/api/agenttalkie/live/followup",{sessionId,requestId,revision,scope}); return z.object({followup:PreparedFollowupSchema}).parse(body).followup; }
   if (hasClientFixtureSession(sessionId)) return clientFixture(() => prepareClientFixtureFollowup(sessionId, requestId, revision, scope));
