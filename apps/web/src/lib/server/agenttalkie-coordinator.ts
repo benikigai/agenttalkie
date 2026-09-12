@@ -109,7 +109,7 @@ ${prepared.draft.content}`;
   } else if(selected.action === "save_document") {
    const receipt=await saveDocument(owner,sessionId,request);
    answer=`Document saved to Ambiguous and read back successfully. Title: ${receipt.title}. Visibility: restricted. Document ID: ${receipt.providerRef}.`;
-   evidence=[{kind:"source_read",reference:`Ambiguous document ${receipt.providerRef}`,sourceObservedAt:receipt.verifiedAt,retrievedAt:receipt.verifiedAt}];
+   evidence=[{kind:"source_read",reference:`https://app.ambiguous.ai/docs/${encodeURIComponent(receipt.providerRef)}`,sourceObservedAt:receipt.verifiedAt,retrievedAt:receipt.verifiedAt}];
   } else if(selected.action==="research"){
    await recordEvent(owner,sessionId,request,"exa","Retrieve public code guidance","running");
    const response=await fetch("https://api.exa.ai/context",{method:"POST",headers:{"x-api-key":process.env.EXA_API_KEY??"","Content-Type":"application/json"},signal:AbortSignal.timeout(18000),body:JSON.stringify({query:selected.question,tokensNum:3000})});

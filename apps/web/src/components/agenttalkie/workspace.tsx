@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { WorkerResult } from "@/lib/agenttalkie-contract";
 import { agenttalkieFixtureRequest } from "@/lib/agenttalkie-fixture";
 import { safeSourceUrl, sameTarget } from "@/lib/client/agenttalkie-state";
@@ -67,6 +67,9 @@ export function AgentTalkieWorkspace() {
   const [activityOpen, setActivityOpen] = useState(false);
   const [clearOpen, setClearOpen] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  useEffect(() => {
+    if (currentRequest?.state === "pending") setView("work");
+  }, [currentRequest?.requestId, currentRequest?.revision, currentRequest?.state]);
   const copied = !!followup && copiedKey === `${followup.requestId}:${followup.revision}`;
   const history = snapshot.session.requests.filter((request) => sameTarget(request, target));
   const finding = splitFinding(answer?.answer ?? "");
@@ -132,6 +135,7 @@ export function AgentTalkieWorkspace() {
         <button className="at-tab" aria-expanded={activityOpen} aria-controls="at-activity-panel" onClick={() => setActivityOpen(true)}><Icon name="source" size={15} /> Activity</button>
       </nav>
       <div className="at-actions" style={{marginBottom:16}}>
+        <a className="at-button" href="https://app.ambiguous.ai/docs" target="_blank" rel="noopener noreferrer">Open Ambiguous <Icon name="arrow" size={14} /></a>
         <button className="at-button" disabled={loading} onClick={() => {setView("work");setActivityOpen(false);void workspace.reset();}}>New conversation</button>
         <button className="at-button" disabled={loading || history.length===0} onClick={() => setClearOpen(true)}>Clear conversation history</button>
       </div>
