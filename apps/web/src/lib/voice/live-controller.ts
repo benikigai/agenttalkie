@@ -42,6 +42,7 @@ export interface LiveDelegation {
 }
 
 export interface LiveVoiceCallbacks {
+  onAudioSources?(sources: { input: MediaStream | null; output: HTMLAudioElement | null }): void;
   onState?(state: LiveVoiceState): void;
   onTranscript?(transcript: TranscriptSnapshot): void;
   onDelegation?(delegation: LiveDelegation): void;
@@ -146,6 +147,7 @@ export function createLiveVoiceController(callbacks: LiveVoiceCallbacks = {}): L
   }
 
   function silence(run: Connection) {
+    callbacks.onAudioSources?.({ input: null, output: null });
     run.microphone?.getTracks().forEach((track) => track.stop());
     if (run.audio) {
       run.audio.pause();
@@ -314,6 +316,7 @@ export function createLiveVoiceController(callbacks: LiveVoiceCallbacks = {}): L
         return;
       }
       run.microphone = microphone;
+      callbacks.onAudioSources?.({ input: microphone, output: null });
       const peer = new RTCPeerConnection();
       run.peer = peer;
       run.audio = new Audio();
@@ -328,6 +331,7 @@ export function createLiveVoiceController(callbacks: LiveVoiceCallbacks = {}): L
         const track = (event as RTCTrackEvent).track;
         if (!current(run)) { track.stop(); return; }
         run.audio!.srcObject = new MediaStream([track]);
+        callbacks.onAudioSources?.({ input: run.microphone ?? null, output: run.audio ?? null });
         void play(run);
       }, run);
       listen(peer, "connectionstatechange", () => {

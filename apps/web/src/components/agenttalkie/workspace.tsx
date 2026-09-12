@@ -52,21 +52,35 @@ export function AgentTalkieWorkspace() {
   };
 
   return <div className="at-grid">
-    <aside className="at-rail" aria-label="Workspace agents">
-      <div><p className="at-eyebrow">Workspace</p><p className="at-workspace-name">{target.projectName}</p></div>
-      <div><p className="at-eyebrow">Your agents</p><div className="at-agent-list">
-        {snapshot.targets.map((agent) => <button key={`${agent.projectId}:${agent.agentId}:${agent.workerSessionId}`} className="at-agent" aria-pressed={sameTarget(agent, target)} onClick={() => { workspace.selectTarget(agent); setView("work"); }}>
-          <span className="at-agent-monogram">{agent.agentName.slice(0, 1)}</span><span><strong>{agent.agentName}</strong><small>{agent.availability === "unavailable" ? "Unavailable" : agent.evidenceMode === "fixture" ? "Fixture session" : agent.provider}</small></span>
-        </button>)}
-      </div></div>
-      <div className="at-rail-note"><p>One conversation.<br />Your agents' actual work.</p><p>{snapshot.session.mode === "fixture" ? "You are exploring sample evidence." : "Answers retain their source and session."}</p></div>
+    <aside className="at-rail" aria-label="Projects">
+      <p className="at-eyebrow">Projects</p>
+      <div className="at-project-list">
+        {[...new Map(snapshot.targets.map((agent) => [agent.projectId, agent])).values()].map((project) =>
+          <button className="at-project" key={project.projectId} aria-pressed={project.projectId === target.projectId}
+            onClick={() => {
+              if (project.projectId !== target.projectId) workspace.selectTarget(snapshot.targets.find((agent) => agent.projectId === project.projectId && agent.availability !== "unavailable") ?? project);
+              setView("work");
+            }}>
+            <Icon name="work" size={17} /><span>{project.projectName}</span>
+          </button>)}
+      </div>
+      <div className="at-rail-note"><p>Work stays in focus.<br />The conversation stays with you.</p></div>
     </aside>
 
     <main className="at-main" id="main-content">
-      <div className="at-breadcrumb"><Icon name="work" size={14} /> My workspace <Icon name="chevron" size={10} /> <span>{target.agentName}</span></div>
-      <header className="at-heading"><div><p className="at-eyebrow">Pick up the conversation</p><h1>What needs your attention?</h1>
-        <div className="at-context-line"><strong>{target.agentName}</strong><span>·</span><span>{target.projectName}</span><span className="at-mode"><span className="at-dot" />{target.availability === "unavailable" ? "Unavailable" : snapshot.session.mode === "fixture" ? "Fixture workspace" : "Existing session"}</span></div>
+      <header className="at-heading"><div>
+        <p className="at-eyebrow">{target.projectName}</p>
+        <h1>Let's move the work forward.</h1>
+        <p className="at-heading-description">Pick up the thread. Find the blocker. Decide what happens next.</p>
       </div></header>
+      <div className="at-worker-context">
+        <label htmlFor="at-worker">Working with</label>
+        <select id="at-worker" value={snapshot.targets.findIndex((agent) => sameTarget(agent, target))}
+          onChange={(event) => { const next = snapshot.targets[Number(event.target.value)]; if (next) { workspace.selectTarget(next); setView("work"); } }}>
+          {snapshot.targets.map((agent, index) => <option key={`${agent.projectId}:${agent.agentId}:${agent.workerSessionId}`} value={index}>{agent.agentName}{agent.availability === "unavailable" ? " · Unavailable" : ""}</option>)}
+        </select>
+        <span className="at-context-caption">{currentRequest ? `Question ${currentRequest.revision}` : "One focused conversation"}</span>
+      </div>
       <nav className="at-tabs" aria-label="Workspace view">
         <button className="at-tab" aria-pressed={view === "work"} onClick={() => setView("work")}><Icon name="work" size={15} /> Current work</button>
         <button className="at-tab" aria-pressed={view === "history"} onClick={() => setView("history")}><Icon name="history" size={15} /> Conversation history <span className="at-tab-count">{history.length}</span></button>
@@ -83,15 +97,15 @@ export function AgentTalkieWorkspace() {
           </li>)}</ol>}
         </> : <>
           {target.availability === "unavailable" && <div className="at-state"><Icon name="alert" /><div><p><strong>{target.agentName} is unavailable</strong></p><p>{target.unavailableReason ?? "This worker cannot be reached right now."}</p></div></div>}
-          {!currentRequest ? <div className="at-intro"><h2>Start with one useful question.</h2><p>Ask about this agent's work. Review the answer with its source, then narrow the question as you go.</p>
+          {!currentRequest ? <div className="at-intro"><h2>What should we look into?</h2><p>Ask about this agent's work. Review the answer with its source, then narrow the question as you go.</p>
             <button className="at-prompt" disabled={!available || submitting} onClick={() => void workspace.sendQuestion(agenttalkieFixtureRequest.question)}><span>{agenttalkieFixtureRequest.question}</span><Icon name="arrow" /></button>
             <button className="at-prompt" disabled={!available || submitting} onClick={() => void workspace.sendQuestion("Which part of the voice connection still needs verification?")}><span>What still needs verification?</span><Icon name="arrow" /></button>
           </div> : <>
             <div className="at-request"><span className="at-person">You</span><div><small>YOUR QUESTION · REVISION {currentRequest.revision}</small><p>{currentRequest.question}</p></div></div>
             {currentRequest.state === "pending" && <div className="at-state" role="status"><Icon name="history" /><div><p>{submitting ? "Submitting your question…" : "Waiting for the agent's answer…"}</p><p>You can correct the question while this request is pending.</p></div></div>}
             {(currentRequest.state === "failed" || currentRequest.state === "unavailable") && <div className="at-state" role="status"><Icon name="alert" /><div><p>{currentRequest.state === "unavailable" ? "The agent is unavailable." : "The request did not complete."}</p><p>{currentRequest.error?.message ?? "No answer was returned."}</p></div></div>}
-            {answer && <article className="at-response"><div className="at-response-header"><span className="at-agent-monogram" style={{ width: 28, height: 28, fontSize: 16 }}>{target.agentName.slice(0, 1)}</span><strong>{target.agentName}</strong><span className="at-mode">{[...new Set(answer.evidence.map((e) => evidenceLabels[e.kind]))].join(" · ")}</span></div>
-              <p className="at-answer">{answer.answer}</p><EvidenceDetails result={answer} />
+            {answer && <article className="at-response"><div className="at-response-header"><span className="at-agent-monogram" style={{ width: 28, height: 28, fontSize: 16 }}>{target.agentName.slice(0, 1)}</span><strong>{target.agentName}</strong><span className="at-result-caption">Finding received</span></div>
+              <h2 className="at-finding-title">The latest finding</h2><p className="at-answer">{answer.answer}</p><EvidenceDetails result={answer} />
               <div className="at-actions"><button className="at-button at-button-primary" disabled={!available || submitting || preparing} onClick={() => { setCopiedKey(null); void workspace.prepare(); }}>{preparing ? "Preparing…" : "Prepare follow-up"}<Icon name="arrow" size={14} /></button><button className="at-button" onClick={() => setView("history")}>View history</button></div>
             </article>}
             {followup && <section className="at-followup" aria-label="Prepared follow-up"><p className="at-eyebrow">Prepared · Not sent</p><h3>A next step for {followup.recipient}</h3>
