@@ -1,6 +1,7 @@
 import { FollowupError } from "./followup-error";
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
+import { configuredPublicDemoOrigins } from "./agenttalkie-http";
 import { FollowupService } from "./followups";
 import type { Workplace } from "./workplace";
 const cookieName = "web-followup-session";
@@ -59,12 +60,14 @@ export function createFollowupHandler(options: {
         },
       });
     // A matching arbitrary Host/Origin can be DNS rebinding against a local credential.
-    // Deployment must add authenticated users and a deliberate trusted-origin allowlist.
-    if (
-      !["localhost", "127.0.0.1", "[::1]"].includes(expectedOrigin.hostname)
-    ) {
+    // Loopback is always allowed. Any other host must be an exact, https origin the
+    // operator listed in AGENTTALKIE_PUBLIC_DEMO_ORIGINS. The POST origin check below
+    // still applies, so a listed origin does not weaken CSRF protection.
+    const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(expectedOrigin.hostname);
+    const publicDemo = configuredPublicDemoOrigins().includes(expectedOrigin.origin);
+    if (!loopback && !publicDemo) {
       return Response.json(
-        { error: "This demo accepts loopback hosts only." },
+        { error: "This demo accepts loopback hosts and configured demo origins only." },
         { status: 403 },
       );
     }
