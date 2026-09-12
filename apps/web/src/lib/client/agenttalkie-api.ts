@@ -1,11 +1,24 @@
 import { z } from "zod";
 import {
   AGENTTALKIE_ROUTES, ApiErrorSchema, PreparedFollowupSchema,
-  SessionSnapshotSchema, type WorkerRequest,
+  SessionBootstrapSchema, SessionSnapshotSchema, type WorkerRequest,
 } from "../agenttalkie-contract";
+import {
+  ClientFixtureError, createClientFixtureSession, endClientFixtureSession,
+  hasClientFixtureSession, prepareClientFixtureFollowup, readClientFixtureSession,
+  submitClientFixtureQuestion,
+} from "./agenttalkie-fixture-client";
 
 export class AgentTalkieApiError extends Error {
   constructor(public code: string, message: string) { super(message); }
+}
+
+function clientFixture<T>(operation: () => T): T {
+  try { return operation(); }
+  catch (error) {
+    if (error instanceof ClientFixtureError) throw new AgentTalkieApiError(error.code, error.message);
+    throw error;
+  }
 }
 
 async function request(path: string, body?: unknown, signal?: AbortSignal): Promise<unknown> {
@@ -25,23 +38,31 @@ async function request(path: string, body?: unknown, signal?: AbortSignal): Prom
 }
 
 export async function createSession(mode: "fixture" | "live", signal?: AbortSignal) {
-  await request(AGENTTALKIE_ROUTES.session, undefined, signal);
+  const bootstrap = SessionBootstrapSchema.parse(await request(AGENTTALKIE_ROUTES.session, undefined, signal));
+  if (bootstrap.persistence === "client_fixture") {
+    if (mode !== "fixture") throw new AgentTalkieApiError("PUBLIC_DEMO_FIXTURE_ONLY", "The public demo supports fixture sessions only.");
+    return clientFixture(createClientFixtureSession);
+  }
   return SessionSnapshotSchema.parse(await request(AGENTTALKIE_ROUTES.session, { operation: "create", mode }, signal));
 }
 
 export async function readSession(sessionId: string, signal?: AbortSignal) {
+  if (hasClientFixtureSession(sessionId)) return clientFixture(() => readClientFixtureSession(sessionId));
   return SessionSnapshotSchema.parse(await request(`${AGENTTALKIE_ROUTES.session}?sessionId=${encodeURIComponent(sessionId)}`, undefined, signal));
 }
 
 export async function submitQuestion(sessionId: string, question: WorkerRequest) {
+  if (hasClientFixtureSession(sessionId)) return clientFixture(() => submitClientFixtureQuestion(sessionId, question));
   return SessionSnapshotSchema.parse(await request(AGENTTALKIE_ROUTES.requests, { sessionId, ...question }));
 }
 
 export async function endSession(sessionId: string) {
+  if (hasClientFixtureSession(sessionId)) return clientFixture(() => endClientFixtureSession(sessionId));
   return SessionSnapshotSchema.parse(await request(AGENTTALKIE_ROUTES.session, { operation: "end", sessionId }));
 }
 
 export async function prepareFollowup(sessionId: string, requestId: string, revision: number, scope: string) {
+  if (hasClientFixtureSession(sessionId)) return clientFixture(() => prepareClientFixtureFollowup(sessionId, requestId, revision, scope));
   const schema = z.object({ followup: PreparedFollowupSchema });
   return schema.parse(await request(AGENTTALKIE_ROUTES.followup, { sessionId, requestId, revision, scope })).followup;
 }
