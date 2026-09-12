@@ -72,7 +72,7 @@ export async function complete(owner:string,sessionId:string,request:WorkerReque
   let answer="";let evidence:WorkerResult["evidence"]=[];
   if(selected.action === "save_document" && selected.question !== "save this document") throw new AgentTalkieError(409,"DOCUMENT_APPROVAL_REQUIRED","Review the draft, then say exactly: save this document.");
   if(selected.action === "workspace_tool" || selected.action === "approve_tool") {
-   if(selected.action === "approve_tool" && (selected.question !== "approve workspace action" || request.question !== "approve workspace action")) throw new AgentTalkieError(409,"TOOL_APPROVAL_REQUIRED","Review the exact action and say: approve workspace action.");
+   if(selected.action === "approve_tool" && (selected.question !== "approve workspace action" || !/^approve workspace action[.!?]*$/i.test(request.question.trim()))) throw new AgentTalkieError(409,"TOOL_APPROVAL_REQUIRED","Review the exact action and say: approve workspace action.");
    const result=selected.action === "approve_tool" ? await approveDirectTool({owner,sessionId,request}) : await runDirectTools({owner,sessionId,request},selected.question,modelJSON);
    answer=result.answer;evidence=result.evidence;
   } else if(selected.action==="orient" || selected.action==="list_tasks"){
