@@ -1,3 +1,5 @@
+import { liveOwner } from "@/lib/server/agenttalkie-live-auth";
+import { apiFailure } from "@/lib/server/agenttalkie-http";
 import { randomUUID } from "node:crypto";
 import {
   CopilotRuntime,
@@ -20,6 +22,9 @@ const app = createCopilotHonoHandler({
   basePath: "/api/mobile-copilotkit",
 });
 
-export const GET = app.fetch;
-export const POST = app.fetch;
-export const OPTIONS = app.fetch;
+async function handle(request: Request) {
+  try { liveOwner(request); return await app.fetch(request); } catch(error) { return apiFailure(error); }
+}
+export const GET = handle;
+export const POST = handle;
+export const OPTIONS = handle;

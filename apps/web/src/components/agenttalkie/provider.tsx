@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { SessionSnapshotSchema, WorkerRequestSchema } from "@/lib/agenttalkie-contract";
+import { z } from "zod";
 import type { AgentTarget, SessionSnapshot, WorkerRequest } from "@/lib/agenttalkie-contract";
 import { agenttalkieFixture, agenttalkieFixtureTarget } from "@/lib/agenttalkie-fixture";
 import * as api from "@/lib/client/agenttalkie-api";
@@ -30,7 +32,7 @@ function useWorkspace() {
     setSnapshot(next);
   }, []);
 
-  const start = useCallback(async (mode: "fixture" | "live" = "fixture", signal?: AbortSignal) => {
+  const start = useCallback(async (mode: "fixture" | "live" = snapshotRef.current.session.mode, signal?: AbortSignal) => {
     const thisEpoch = ++epoch.current;
     setLoading(true); setReady(false); setError(null);
     setPreparing(false); setSubmitting(false); mutation.current = false;
@@ -52,7 +54,7 @@ function useWorkspace() {
 
   useEffect(() => {
     const controller = new AbortController();
-    void start("fixture", controller.signal);
+    void api.liveAuthentication().then(auth => start(auth.authenticated ? "live" : "fixture", controller.signal)).catch(() => start("fixture", controller.signal));
     return () => { controller.abort(); epoch.current++; };
   }, [start]);
 
@@ -119,6 +121,22 @@ function useWorkspace() {
     }
   }, [applySnapshot]);
 
+  const delegate = useCallback(async (delegationId: string, transcript: {role: "user" | "assistant"; text: string}[]) => {
+    const current = snapshotRef.current;
+    const thisEpoch = epoch.current;
+    const marker: WorkerRequest = {requestId:crypto.randomUUID(),revision:1,projectId:targetRef.current.projectId,agentId:targetRef.current.agentId,workerSessionId:targetRef.current.workerSessionId,question:"Interpreting your spoken request…"};
+    expectedRef.current=marker;setExpected(marker);setError(null);
+    const data=await api.delegateVoice(current.session.id,delegationId,transcript);
+    if(thisEpoch!==epoch.current || expectedRef.current!==marker)return null;
+    const parsed=z.discriminatedUnion("status",[
+      z.object({status:z.literal("accepted"),snapshot:SessionSnapshotSchema,request:WorkerRequestSchema}),
+      z.object({status:z.literal("clarify"),message:z.string()}),
+      z.object({status:z.literal("already_received")}),
+    ]).parse(data);
+    if(parsed.status!=="accepted") { if(parsed.status==="clarify")setError(parsed.message);return parsed; }
+    expectedRef.current=parsed.request;setExpected(parsed.request);applySnapshot(parsed.snapshot);return parsed;
+  },[applySnapshot]);
+
   const end = useCallback(async () => {
     const current = snapshotRef.current;
     const thisEpoch = ++epoch.current;
@@ -161,7 +179,7 @@ function useWorkspace() {
   const followup = isCurrentFollowup(snapshot, expected) && snapshot.session.preparedFollowup && sameTarget(snapshot.session.preparedFollowup, target) ? snapshot.session.preparedFollowup : null;
 
   return { snapshot, target, selectTarget, ready, loading, submitting, preparing, error, answer, currentRequest, followup,
-    start, end, sendQuestion, prepare,
+    start, end, sendQuestion, prepare, delegate,
     retry: retryRequest ? () => sendQuestion(retryRequest.question, false, retryRequest) : null,
     isCurrent: (request: WorkerRequest) => {
       const wanted = expectedRef.current;

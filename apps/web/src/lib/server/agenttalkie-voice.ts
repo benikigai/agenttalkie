@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { z } from "zod";
 import { CreateVoiceSchema, VoiceConnectionSchema } from "../agenttalkie-contract";
 import { apiFailure, browserBoundary, jsonReply, readJson } from "./agenttalkie-http";
@@ -7,10 +8,13 @@ const providerResponse = z.object({
   session: z.object({ id: z.string().min(1) }),
   transport: z.object({ type: z.literal("webrtc"), sdp: z.string().min(1) }),
 });
-const instructions = "You are AgentTalkie's voice host. Discuss the selected existing worker's actual work. Delegate substantive questions and corrections to the client. Clearly attribute supplied results and distinguish fixture, checkpoint, source read, and worker reply evidence. Never claim a follow-up was sent. Wait for current verified results; do not speak superseded answers.";
+export const instructions = "You are AgentTalkie's voice host. Help the user work with the configured Ambiguous demo task, Exa code research, and a separately connected coding runner. Greet briefly and ask what needs attention. Delegate substantive questions and corrections to the client. Clearly attribute supplied results and distinguish fixture, checkpoint, source read, and worker reply evidence. Never claim a follow-up was sent. Delegate task reads, research, investigations and corrections; acknowledge the request briefly while the backend works. Do not invent task contents or worker results. Wait for current verified results; do not speak superseded answers.";
 
 export function createAgentTalkieVoiceHandler(options: {
-  service: AgentTalkieService;
+  service: Pick<AgentTalkieService, "snapshot">;
+  authorize?: (request: Request) => string;
+  snapshot?: (owner: string, id: string) => Promise<ReturnType<AgentTalkieService["snapshot"]>>;
+  claim?: (owner: string, id: string, offerHash: string) => Promise<void>;
   enabled: () => boolean;
   apiKey: () => string | undefined;
   fetch?: typeof fetch;
@@ -19,16 +23,19 @@ export function createAgentTalkieVoiceHandler(options: {
   const attempted = new Set<string>();
   return async (request: Request) => {
     try {
-      const { owner } = browserBoundary(request);
+      const owner = options.authorize ? options.authorize(request) : browserBoundary(request).owner;
       if (request.method !== "POST") throw new AgentTalkieError(405, "METHOD_NOT_ALLOWED", "Use POST.");
       const input = CreateVoiceSchema.parse(await readJson(request, 110000));
-      const snapshot = options.service.snapshot(owner, input.sessionId);
+      const snapshot = options.snapshot ? await options.snapshot(owner, input.sessionId) : options.service.snapshot(owner, input.sessionId);
       if (snapshot.session.status !== "active" || snapshot.session.mode !== "live") throw new AgentTalkieError(409, "LIVE_SESSION_REQUIRED", "Start an active live conversation before connecting voice.");
       if (!options.enabled()) throw new AgentTalkieError(503, "LIVE_VOICE_NOT_ENABLED", "Live voice has not been enabled for this local runtime. Provider spend and account access remain unverified.");
       const apiKey = options.apiKey();
       if (!apiKey) throw new AgentTalkieError(503, "LIVE_VOICE_UNCONFIGURED", "The server has no OpenAI credential configured through the operator's secret manager.");
-      if (attempted.has(input.sessionId)) throw new AgentTalkieError(409, "VOICE_ALREADY_ATTEMPTED", "Voice creation was already attempted. Do not retry an uncertain provider session automatically.");
-      attempted.add(input.sessionId);
+      const offerHash = createHash("sha256").update(input.sdp).digest("hex");
+      const attemptKey = options.claim ? `${input.sessionId}:${offerHash}` : input.sessionId;
+      if (attempted.has(attemptKey)) throw new AgentTalkieError(409, "VOICE_ALREADY_ATTEMPTED", "Voice creation was already attempted. Do not retry an uncertain provider session automatically.");
+      attempted.add(attemptKey);
+      await options.claim?.(owner, input.sessionId, offerHash);
       let response: Response;
       try {
         response = await (options.fetch ?? fetch)("https://api.openai.com/v1/live/sessions", {

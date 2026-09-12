@@ -1,3 +1,5 @@
+import { liveOwner } from "@/lib/server/agenttalkie-live-auth";
+import { apiFailure } from "@/lib/server/agenttalkie-http";
 /**
  * Server-side search for the voice agent.
  *
@@ -8,6 +10,7 @@
 import { searchWeb } from "agent-core";
 
 export async function POST(request: Request) {
+  try { liveOwner(request); } catch(error) { return apiFailure(error); }
   const body = (await request.json()) as { query?: unknown; results?: unknown };
   const query = typeof body.query === "string" ? body.query : "";
   if (!query) {

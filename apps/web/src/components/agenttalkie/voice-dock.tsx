@@ -34,17 +34,20 @@ export function VoiceDock() {
   useEffect(() => {
     let active = true;
     const transport = createLiveVoiceController({
-      onState: (state) => { if (active) setVoice(state); },
-      onTranscript: (value) => { if (active) setTranscript(value); },
+      onState: (state) => { if (active) {setVoice(state); if(state.status === "connecting") {setTranscript(null);setSpokenRequest(null);}} },
+      onTranscript: (value) => { if (active) {setTranscript(value);setTranscriptOpen(true);} },
       onError: (message) => { if (active) setNotice(message); },
       onAudioSources: (value) => { if (active) setSources(value); },
       onDelegation: (event) => {
         if (!active) return;
-        composerRevision.current++;
-        setDelegationId(event.delegationId);
-        setText(event.inputText);
-        setComposerOpen(true);
-        setNotice("Review the captured words before asking the agent. Voice fragments may be incomplete.");
+        setTranscriptOpen(true);setNotice("Request received. Checking the workspace…");
+        setSpokenRequest(null);
+        const sessionId=workspaceRef.current.snapshot.session.id;
+        void workspaceRef.current.delegate(event.delegationId,event.transcript.slice(-60).map(({role,text})=>({role,text:text.slice(0,4000)}))).then(result=>{
+          if(!active||workspaceRef.current.snapshot.session.id!==sessionId)return;
+          if(result?.status==="accepted") {setSpokenRequest({requestId:result.request.requestId,revision:result.request.revision,delegationId:event.delegationId});setNotice("Working on your request. Progress appears in Activity.");}
+          else if(result?.status==="clarify") {setNotice(result.message);controller.current?.appendCommentary({delegationId:event.delegationId,content:result.message.slice(0,400),isCurrent:()=>workspaceRef.current.snapshot.session.id===sessionId&&workspaceRef.current.snapshot.session.status==="active"});}
+        }).catch(()=>{if(active)setNotice("The spoken request could not be confirmed. Check the dashboard before trying again.");});
       },
     });
     controller.current = transport;
@@ -65,7 +68,21 @@ export function VoiceDock() {
     let summary = content;
     while (new TextEncoder().encode(summary).length > 480) summary = summary.slice(0, -1);
     controller.current?.appendCommentary({ delegationId: mapped.delegationId, content: summary, isCurrent: () => workspaceRef.current.isCurrent(request) });
+    setNotice(null);
   }, [workspace.answer, workspace.currentRequest, workspace.target.agentName, voice.status, spokenRequest]);
+
+  useEffect(() => {
+    const request=workspace.currentRequest;
+    if(!spokenRequest || !request?.error || request.requestId!==spokenRequest.requestId || request.revision!==spokenRequest.revision)return;
+    controller.current?.appendCommentary({delegationId:spokenRequest.delegationId,content:request.error.message.slice(0,400),isCurrent:()=>workspaceRef.current.isCurrent(request)});
+    setNotice(request.error.message);
+  },[workspace.currentRequest,spokenRequest]);
+
+  useEffect(() => {
+    if(voice.status!=="connected")return;
+    const timer=setTimeout(()=>{setNotice("The five-minute demo voice window ended. Your work is saved.");void controller.current?.end();},5*60*1000);
+    return ()=>clearTimeout(timer);
+  },[voice.status]);
 
   const connected = voice.status === "connected" || !!localStream;
   const connecting = voice.status === "connecting" || localConnecting;
@@ -89,7 +106,7 @@ export function VoiceDock() {
       await testMicrophone();
       return;
     }
-    await controller.current?.start(workspace.snapshot.session.id).catch(() => {});
+    await controller.current?.start(workspace.snapshot.session.id, "/api/agenttalkie/live/voice").catch(() => {});
   };
 
   async function testMicrophone() {
@@ -143,7 +160,7 @@ export function VoiceDock() {
           <button type="submit" className="at-button at-button-primary" disabled={!canAsk || !text.trim()}>{workspace.submitting ? "Submitting…" : activeRequest ? "Ask new question" : "Ask agent"}<Icon name="arrow" size={14} /></button>
         </div></div>
       </form>}
-      {transcriptOpen && transcript && <div className="at-composer" aria-label="Voice transcript" style={{ maxHeight: 160, overflowY: "auto" }}>{transcript.fragments.map((fragment) => <p key={fragment.eventId} style={{ fontSize: 12, marginBottom: 8 }}><strong>{fragment.role === "user" ? "You" : "Voice"}:</strong> {fragment.text}</p>)}</div>}
+      {transcriptOpen && transcript && <div className="at-composer" aria-label="Voice transcript" style={{ maxHeight: 160, overflowY: "auto" }}><p style={{fontSize:12,marginBottom:8}}><strong>You:</strong> {transcript.inputText.slice(-600) || "Listening…"}</p><p style={{fontSize:12}}><strong>Voice:</strong> {transcript.outputText.slice(-600)}</p></div>}
       <div className="at-voice-row">
         <div className="at-voice-summary">
           <strong>{workspace.target.agentName}</strong>

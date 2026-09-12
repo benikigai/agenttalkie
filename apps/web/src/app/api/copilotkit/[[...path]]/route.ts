@@ -1,3 +1,5 @@
+import { liveOwner } from "@/lib/server/agenttalkie-live-auth";
+import { apiFailure } from "@/lib/server/agenttalkie-http";
 /**
  * The web surface's runtime endpoint.
  *
@@ -25,7 +27,7 @@ import { makeAgent } from "agent-core";
 
 // Web writes use /api/followups after a browser approval. Never expose raw MCP writes here.
 const runtime = new CopilotRuntime({
-  agents: () => ({ default: makeAgent(randomUUID(), { workplace: false }) }),
+  agents: () => ({ default: makeAgent(randomUUID(), { workplace: false, prompt: "You are AgentTalkie. Use the registered frontend tools and current workspace context to select the allowed target, ask or correct a question, and prepare followups. Never invent task state or claim sending, saving, or deployment. Prepared means not sent. Use current revisions only." }) }),
 });
 
 const app = createCopilotHonoHandler({
@@ -33,6 +35,9 @@ const app = createCopilotHonoHandler({
   basePath: "/api/copilotkit",
 });
 
-export const GET = app.fetch;
-export const POST = app.fetch;
-export const OPTIONS = app.fetch;
+async function handle(request: Request) {
+  try { liveOwner(request); return await app.fetch(request); } catch(error) { return apiFailure(error); }
+}
+export const GET = handle;
+export const POST = handle;
+export const OPTIONS = handle;

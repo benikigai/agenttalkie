@@ -1,3 +1,5 @@
+import { liveOwner } from "@/lib/server/agenttalkie-live-auth";
+import { apiFailure } from "@/lib/server/agenttalkie-http";
 /**
  * Mints an ephemeral client secret for the Realtime API.
  *
@@ -7,7 +9,8 @@
  */
 import { REALTIME_MODEL, REALTIME_VOICE } from "@/lib/realtime-config";
 
-export async function POST() {
+export async function POST(request: Request) {
+  try { liveOwner(request); } catch(error) { return apiFailure(error); }
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return Response.json({ error: "OPENAI_API_KEY is not set on the server." }, { status: 500 });
