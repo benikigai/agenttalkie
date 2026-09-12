@@ -7,6 +7,7 @@ const validator = new AjvJsonSchemaValidator();
 // Account administration and autonomous delegation are outside the workspace tool boundary.
 const excluded = /(?:^|_)(?:auth|identity|api_key|credential|secret|token|password|billing|subscription|payment|admin|oauth|webhook|automation|automations|coworker|coworkers|assistant|mcp|permission|permissions|visibility|share|invite|ownership|team|teams|user|users)(?:_|$)/;
 export function toolMode(tool: Tool): "read" | "approve" | "blocked" {
+  if (["auth_whoami","users_list"].includes(tool.name) && tool.annotations?.readOnlyHint === true && tool.annotations.destructiveHint === false) return "read";
   if (excluded.test(tool.name) || !tool.annotations) return "blocked";
   if (tool.annotations.readOnlyHint === true && tool.annotations.destructiveHint === false && tool.annotations.openWorldHint === false) return "read";
   return "approve";
