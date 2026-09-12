@@ -5,6 +5,7 @@ import type { AgentTarget, SessionSnapshot, WorkerRequest } from "@/lib/agenttal
 import { agenttalkieFixture, agenttalkieFixtureTarget } from "@/lib/agenttalkie-fixture";
 import * as api from "@/lib/client/agenttalkie-api";
 import { currentAnswer, isCurrentFollowup, sameTarget } from "@/lib/client/agenttalkie-state";
+import { AgentTalkieCopilotBridge } from "./copilot-bridge";
 
 function useWorkspace() {
   const [snapshot, setSnapshot] = useState<SessionSnapshot>(agenttalkieFixture);
@@ -139,15 +140,17 @@ function useWorkspace() {
     const current = snapshotRef.current;
     const result = currentAnswer(current, targetRef.current, expectedRef.current);
     const request = current.session.requests.find((item) => item.requestId === result?.requestId && item.revision === result?.revision);
-    if (!result || !request) return;
+    if (!result || !request) return null;
     const thisEpoch = epoch.current;
     setPreparing(true); setError(null);
     try {
-      await api.prepareFollowup(current.session.id, result.requestId, result.revision, `Follow up on: ${request.question}`);
+      const prepared = await api.prepareFollowup(current.session.id, result.requestId, result.revision, `Follow up on: ${request.question}`);
       const next = await api.readSession(current.session.id);
       if (thisEpoch === epoch.current) applySnapshot(next);
+      return thisEpoch === epoch.current ? prepared : null;
     } catch (cause) {
       if (thisEpoch === epoch.current) setError(cause instanceof Error ? cause.message : "Could not prepare the follow-up.");
+      return null;
     } finally { if (thisEpoch === epoch.current) setPreparing(false); }
   }, [applySnapshot]);
 
@@ -171,8 +174,13 @@ const WorkspaceContext = createContext<ReturnType<typeof useWorkspace> | null>(n
 
 export function AgentTalkieProvider({ children }: { children: React.ReactNode }) {
   const workspace = useWorkspace();
-  return <WorkspaceContext.Provider value={workspace}>{children}</WorkspaceContext.Provider>;
+  return <WorkspaceContext.Provider value={workspace}>
+    <AgentTalkieCopilotBridge workspace={workspace} />
+    {children}
+  </WorkspaceContext.Provider>;
 }
+
+export type AgentTalkieWorkspace = ReturnType<typeof useWorkspace>;
 
 export function useAgentTalkie() {
   const context = useContext(WorkspaceContext);

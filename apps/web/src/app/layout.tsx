@@ -25,7 +25,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <AgentTalkieProvider><AgentTalkieShell><Providers>{children}</Providers></AgentTalkieShell></AgentTalkieProvider>
+        <Providers><AgentTalkieProvider><AgentTalkieShell>{children}</AgentTalkieShell></AgentTalkieProvider></Providers>
       </body>
     </html>
   );
