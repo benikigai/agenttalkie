@@ -6,11 +6,34 @@ import { agenttalkieFixtureRequest } from "@/lib/agenttalkie-fixture";
 import { safeSourceUrl, sameTarget } from "@/lib/client/agenttalkie-state";
 import { useAgentTalkie } from "./provider";
 import { Icon } from "./icons";
+import { ActivityDrawer } from "./activity";
 
 const evidenceLabels = { worker_reply: "Worker reply", source_read: "Source read", checkpoint: "Checkpoint", fixture: "Fixture" } as const;
 function displayTime(value: string | null) {
   if (!value) return "Unknown";
   return new Date(value).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "UTC" }) + " UTC";
+}
+
+/** The finding is the headline: first sentence up top, the rest as body. */
+function splitFinding(answer: string) {
+  const text = answer.trim();
+  const match = text.match(/^(.+?[.!?])(\s+)([\s\S]+)$/);
+  if (!match || match[1].length > 110) return { headline: text.length > 110 ? text.slice(0, 107).trimEnd() + "…" : text, body: match ? text.slice(match[1].length).trim() : "" };
+  return { headline: match[1], body: match[3] };
+}
+
+export function ProvenanceStrip({ result, agentName }: { result: WorkerResult; agentName: string }) {
+  const primary = result.evidence[0];
+  return <p className="at-provenance">
+    <strong>{agentName}</strong>
+    <span className="at-provenance-sep">·</span>
+    <span>{evidenceLabels[primary.kind]}</span>
+    <span className="at-provenance-sep">·</span>
+    <span>observed {displayTime(primary.sourceObservedAt)}</span>
+    <span className="at-provenance-sep">·</span>
+    <span>revision {result.revision}</span>
+    <code>{result.workerSessionId}</code>
+  </p>;
 }
 
 export function EvidenceDetails({ result }: { result: WorkerResult }) {
@@ -38,9 +61,11 @@ export function AgentTalkieWorkspace() {
   const workspace = useAgentTalkie();
   const { snapshot, target, ready, loading, answer, currentRequest, followup, submitting, preparing } = workspace;
   const [view, setView] = useState<"work" | "history">("work");
+  const [activityOpen, setActivityOpen] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const copied = !!followup && copiedKey === `${followup.requestId}:${followup.revision}`;
   const history = snapshot.session.requests.filter((request) => sameTarget(request, target));
+  const finding = splitFinding(answer?.answer ?? "");
   const available = ready && snapshot.session.status === "active";
 
   const copyFollowup = async () => {
@@ -64,26 +89,37 @@ export function AgentTalkieWorkspace() {
             <Icon name="work" size={17} /><span>{project.projectName}</span>
           </button>)}
       </div>
+      <p className="at-eyebrow" style={{ marginTop: 22 }}>Fleet</p>
+      <div className="at-agent-list">
+        {snapshot.targets.filter((agent) => agent.projectId === target.projectId).map((agent) =>
+          <button className="at-agent" key={`${agent.agentId}:${agent.workerSessionId}`} aria-pressed={sameTarget(agent, target)}
+            onClick={() => { workspace.selectTarget(agent); setView("work"); }}>
+            <span className="at-agent-monogram">{agent.agentName.slice(0, 1)}</span>
+            <span style={{ minWidth: 0 }}>
+              <strong>{agent.agentName}</strong>
+              <small className={`at-agent-status at-agent-status-${agent.availability}`}><span className="at-dot" />{agent.availability === "unavailable" ? "Unavailable" : "Ready"}</small>
+            </span>
+          </button>)}
+      </div>
       <div className="at-rail-note"><p>Work stays in focus.<br />The conversation stays with you.</p></div>
     </aside>
 
     <main className="at-main" id="main-content">
       <header className="at-heading"><div>
-        <p className="at-eyebrow">{target.projectName}</p>
-        <h1>Let's move the work forward.</h1>
-        <p className="at-heading-description">Pick up the thread. Find the blocker. Decide what happens next.</p>
+        <p className="at-eyebrow">{answer ? `${target.agentName} · ${target.projectName}` : target.projectName}</p>
+        <h1>{answer ? finding.headline : "What needs you right now?"}</h1>
+        {answer
+          ? <ProvenanceStrip result={answer} agentName={target.agentName} />
+          : <p className="at-heading-description">Ask your agents what changed, what is blocked, and what needs your decision. Every answer arrives with the agent and the source behind it.</p>}
       </div></header>
       <div className="at-worker-context">
-        <label htmlFor="at-worker">Working with</label>
-        <select id="at-worker" value={snapshot.targets.findIndex((agent) => sameTarget(agent, target))}
-          onChange={(event) => { const next = snapshot.targets[Number(event.target.value)]; if (next) { workspace.selectTarget(next); setView("work"); } }}>
-          {snapshot.targets.map((agent, index) => <option key={`${agent.projectId}:${agent.agentId}:${agent.workerSessionId}`} value={index}>{agent.agentName}{agent.availability === "unavailable" ? " · Unavailable" : ""}</option>)}
-        </select>
+        <span className="at-mode"><span className="at-dot" />{target.availability === "unavailable" ? `${target.agentName} unavailable` : `Talking with ${target.agentName}`}</span>
         <span className="at-context-caption">{currentRequest ? `Question ${currentRequest.revision}` : "One focused conversation"}</span>
       </div>
       <nav className="at-tabs" aria-label="Workspace view">
         <button className="at-tab" aria-pressed={view === "work"} onClick={() => setView("work")}><Icon name="work" size={15} /> Current work</button>
         <button className="at-tab" aria-pressed={view === "history"} onClick={() => setView("history")}><Icon name="history" size={15} /> Conversation history <span className="at-tab-count">{history.length}</span></button>
+        <button className="at-tab" aria-expanded={activityOpen} onClick={() => setActivityOpen(true)}><Icon name="source" size={15} /> Activity</button>
       </nav>
       <section className="at-stage" aria-label={view === "work" ? "Current work" : "Conversation history"}>
         {workspace.error && <div className="at-notice" role="alert">{workspace.error}{workspace.retry && <button className="at-button" style={{ marginLeft: 12 }} onClick={() => void workspace.retry?.()} disabled={submitting}>Retry same request</button>}{!ready && !loading && <button className="at-button" style={{ marginLeft: 12 }} onClick={() => void workspace.start()}>Reconnect workspace</button>}</div>}
@@ -105,7 +141,7 @@ export function AgentTalkieWorkspace() {
             {currentRequest.state === "pending" && <div className="at-state" role="status"><Icon name="history" /><div><p>{submitting ? "Submitting your question…" : "Waiting for the agent's answer…"}</p><p>You can correct the question while this request is pending.</p></div></div>}
             {(currentRequest.state === "failed" || currentRequest.state === "unavailable") && <div className="at-state" role="status"><Icon name="alert" /><div><p>{currentRequest.state === "unavailable" ? "The agent is unavailable." : "The request did not complete."}</p><p>{currentRequest.error?.message ?? "No answer was returned."}</p></div></div>}
             {answer && <article className="at-response"><div className="at-response-header"><span className="at-agent-monogram" style={{ width: 28, height: 28, fontSize: 16 }}>{target.agentName.slice(0, 1)}</span><strong>{target.agentName}</strong><span className="at-result-caption">Finding received</span></div>
-              <h2 className="at-finding-title">The latest finding</h2><p className="at-answer">{answer.answer}</p><EvidenceDetails result={answer} />
+              <p className="at-answer">{finding.body || answer.answer}</p><EvidenceDetails result={answer} />
               <div className="at-actions"><button className="at-button at-button-primary" disabled={!available || submitting || preparing} onClick={() => { setCopiedKey(null); void workspace.prepare(); }}>{preparing ? "Preparing…" : "Prepare follow-up"}<Icon name="arrow" size={14} /></button><button className="at-button" onClick={() => setView("history")}>View history</button></div>
             </article>}
             {followup && <section className="at-followup" aria-label="Prepared follow-up"><p className="at-eyebrow">Prepared · Not sent</p><h3>A next step for {followup.recipient}</h3>
@@ -115,6 +151,7 @@ export function AgentTalkieWorkspace() {
           </>}
         </>}
       </section>
+      <ActivityDrawer open={activityOpen} onClose={() => setActivityOpen(false)} currentRequest={currentRequest} />
     </main>
   </div>;
 }
