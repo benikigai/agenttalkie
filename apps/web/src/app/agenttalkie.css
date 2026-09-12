@@ -164,6 +164,14 @@
 .at-evidence-sources { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
 .at-evidence-sources li { display: flex; align-items: baseline; gap: 10px; font-size: var(--at-t-meta); }
 .at-evidence-sources a { color: var(--at-accent); font-weight: 600; overflow-wrap: anywhere; }
+.at-evidence-preview-btn { margin-left: auto; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--at-accent); background: var(--at-accent-soft); border-radius: var(--at-r-pill); padding: 3px 9px; white-space: nowrap; }
+.at-evidence-preview-btn:hover { background: #e2ebdf; }
+.at-evidence-preview { margin: 14px 0 0; border: 1px solid var(--at-line); border-radius: var(--at-r-md); overflow: hidden; background: var(--at-ground); }
+.at-evidence-preview figcaption { display: flex; align-items: center; gap: 12px; padding: 9px 13px; font-size: var(--at-t-meta); font-weight: 600; border-bottom: 1px solid var(--at-line); background: var(--at-surface); }
+.at-evidence-preview figcaption a { margin-left: auto; color: var(--at-accent); font-weight: 600; white-space: nowrap; }
+.at-evidence-preview iframe { display: block; width: 100%; height: 420px; border: 0; background: #fff; }
+.at-evidence-preview-note { padding: 8px 13px; font-size: 11px; color: var(--at-muted); border-top: 1px solid var(--at-line); }
+@media (max-width: 720px) { .at-evidence-preview iframe { height: 300px; } }
 .at-evidence-sources span { color: var(--at-muted); font-size: 11px; white-space: nowrap; }
 .at-evidence-ref { font-family: "Spline Sans Mono", ui-monospace, monospace; font-size: 11px; background: var(--at-accent-soft); color: #44543f; padding: 2px 7px; border-radius: var(--at-r-sm); }
 
