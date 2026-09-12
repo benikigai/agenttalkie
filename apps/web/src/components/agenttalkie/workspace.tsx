@@ -2,13 +2,20 @@
 
 import { useEffect, useState } from "react";
 import type { WorkerResult } from "@/lib/agenttalkie-contract";
-import { agenttalkieFixtureRequest } from "@/lib/agenttalkie-fixture";
 import { safeSourceUrl, sameTarget } from "@/lib/client/agenttalkie-state";
 import { useAgentTalkie } from "./provider";
 import { Icon } from "./icons";
 import { ActivityDrawer } from "./activity";
 import { LiveEvidence } from "./live-evidence";
 import { ToolsStatus } from "./tools-status";
+
+/** Things this agent can actually do today, phrased so they can be spoken. */
+const STARTER_PROMPTS = [
+  { label: "Show my Ambiguous tasks", tool: "Tasks", send: "Show my Ambiguous tasks and tell me which one needs a decision." },
+  { label: "Draft a document in Ambiguous", tool: "Tasks", send: "Draft a sample virtual assistant job description for me to review before saving to Ambiguous." },
+  { label: "Research this and cite the sources", tool: "Research", send: "Research official React guidance for useEffect cleanup with Exa and show the sources." },
+  { label: "What is blocking the selected task?", tool: "Tasks", send: "Read the selected task and tell me what is blocking it." },
+] as const;
 
 const evidenceLabels = { worker_reply: "Worker reply", source_read: "Source read", checkpoint: "Checkpoint", fixture: "Fixture" } as const;
 function displayTime(value: string | null) {
@@ -158,8 +165,9 @@ export function AgentTalkieWorkspace() {
         </> : <>
           {target.availability === "unavailable" && <div className="at-state"><Icon name="alert" /><div><p><strong>{target.agentName} is unavailable</strong></p><p>{target.unavailableReason ?? "This worker cannot be reached right now."}</p></div></div>}
           {!currentRequest ? <div className="at-intro"><h2>Start here</h2><p>Ask about this agent's work, then narrow the question as you go. Corrections keep the earlier answer in history.</p>
-            <button className="at-prompt" disabled={!available || submitting} onClick={() => void workspace.sendQuestion(snapshot.session.mode==="live"?"Show my actual Ambiguous tasks":agenttalkieFixtureRequest.question)}><span>{snapshot.session.mode==="live"?"Show my Ambiguous tasks":agenttalkieFixtureRequest.question}</span><Icon name="arrow" /></button>
-            <button className="at-prompt" disabled={!available || submitting} onClick={() => void workspace.sendQuestion(snapshot.session.mode==="live"?"Draft a job description for our virtual executive assistant":"Which part of the voice connection still needs verification?")}><span>{snapshot.session.mode==="live"?"Draft a document in Ambiguous":"What still needs verification?"}</span><Icon name="arrow" /></button>
+            {STARTER_PROMPTS.map((prompt) => <button className="at-prompt" key={prompt.send} disabled={!available || submitting} onClick={() => void workspace.sendQuestion(prompt.send)}>
+              <span><span className="at-prompt-label">{prompt.label}</span><span className="at-prompt-tool">{prompt.tool}</span></span><Icon name="arrow" />
+            </button>)}
           </div> : <>
             <div className="at-request"><span className="at-person">You</span><div><small>YOUR QUESTION · REVISION {currentRequest.revision}</small><p>{currentRequest.question}</p></div></div>
             {currentRequest.state === "pending" && <div className="at-state at-state-working" role="status"><div><p>{submitting ? "Submitting your question" : "Working on your question"}<span className="at-working-dots" /></p><p>You can correct the question while this request is pending.</p></div></div>}
