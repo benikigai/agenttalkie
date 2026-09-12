@@ -5,9 +5,12 @@ import { AgentTalkieError } from "@/lib/server/agenttalkie-service";
 import { sql, mutate, recordEvent } from "@/lib/server/agenttalkie-live-store";
 import { WorkerRequestSchema } from "@/lib/agenttalkie-contract";
 
+import {terminalEntrySchema,redactTerminal} from "@/lib/server/agenttalkie-terminal";
+
 const command=z.discriminatedUnion("operation",[
- z.object({operation:z.literal("claim"),runnerId:z.uuid()}).strict(),
+ z.object({operation:z.literal("claim"),runnerId:z.uuid(),outputVersion:z.literal(1).optional()}).strict(),
  z.object({operation:z.literal("heartbeat"),runnerId:z.uuid()}).strict(),
+ z.object({operation:z.literal("output"),runnerId:z.uuid(),jobId:z.string().max(100),claimId:z.uuid(),entries:z.array(terminalEntrySchema).min(1).max(30)}).strict(),
  z.object({operation:z.literal("result"),runnerId:z.uuid(),jobId:z.string().max(100),claimId:z.uuid(),
   status:z.enum(["completed","failed"]),answer:z.string().min(1).max(11000),harness:z.enum(["codex","claude"]),
   nativeSessionId:z.string().max(200).nullable(),repositoryRevision:z.string().regex(/^[a-f0-9]{40}$/),model:z.string().max(200),
@@ -22,10 +25,11 @@ function authorize(request:Request){
 }
 export async function POST(request:Request){try{
  authorize(request);
- const input=command.parse(await readJson(request,30000));
+ const input=command.parse(await readJson(request,125000));
  await sql()`INSERT INTO agenttalkie_runners(id,heartbeat) VALUES(${input.runnerId},now()) ON CONFLICT(id) DO UPDATE SET heartbeat=now()`;
  if(input.operation==="heartbeat")return jsonReply({ok:true});
  if(input.operation==="claim"){
+  if(input.outputVersion!==1)return jsonReply({job:null});
   const claimId=randomUUID();
   const rows=await sql()`UPDATE agenttalkie_jobs j SET state='claimed',runner_id=${input.runnerId},claim_id=${claimId},claimed_at=now()
    FROM (SELECT job.id FROM agenttalkie_jobs job JOIN agenttalkie_threads t ON t.id=job.thread_id AND t.owner=job.owner
@@ -40,6 +44,14 @@ export async function POST(request:Request){try{
  const rows=await sql()`SELECT * FROM agenttalkie_jobs WHERE id=${input.jobId} AND runner_id=${input.runnerId} AND claim_id=${input.claimId}`;
  const job=rows[0];
  if(!job)throw new AgentTalkieError(409,"JOB_CLAIM_MISMATCH","The runner does not own this job.");
+ if(input.operation==="output"){
+  if(job.state!=="claimed")throw new AgentTalkieError(409,"JOB_NOT_RUNNING","This coding job is no longer running.");
+  const entries=input.entries.map(e=>({...e,text:redactTerminal(e.text)}));
+  await sql()`INSERT INTO agenttalkie_job_output(job_id,sequence,text)
+   SELECT ${job.id},e.sequence,e.text FROM jsonb_to_recordset(${JSON.stringify(entries)}::jsonb) AS e(sequence integer,text text)
+   ON CONFLICT(job_id,sequence) DO NOTHING`;
+  return jsonReply({ok:true});
+ }
  const expectedHarness=job.kind==="review"?"claude":"codex";
  if(input.harness!==expectedHarness)throw new AgentTalkieError(409,"HARNESS_MISMATCH","The result used a different coding harness.");
  const artifactHash=createHash("sha256").update(input.answer).digest("hex");

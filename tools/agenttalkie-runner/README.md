@@ -16,3 +16,5 @@ python3 tools/agenttalkie-runner/runner.py \
 The process must remain running. Each native job has a 150-second limit; Claude also has a $0.50 budget. The local journal prevents relaunch after an uncertain acknowledgment. Cloud jobs time out after four minutes without a result and are never automatically relaunched. Keep the journal private and retain it for uncertain deliveries.
 
 The native tools exclude global agent instructions, skills and MCP integrations. Codex uses its read-only sandbox; Claude only has Read, Grep and Glob. Provider routing is restored explicitly after `exec` because `--ignore-user-config` also drops Ori's prepended provider settings.
+
+The dashboard polls authenticated job output once per second while a job is running. The runner publishes selected native JSON events, including commands, file-tool results and final text. Reasoning events, stderr diagnostics, credentials and private paths are excluded. The viewer has no terminal input or arbitrary-command endpoint. Each job retains up to 200 entries of 4,000 characters; retries preserve entry sequence IDs. Only runners advertising output protocol version 1 claim new jobs.
