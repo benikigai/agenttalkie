@@ -110,6 +110,15 @@ export async function runDirectTools(c:Context,question:string,decide:Decide,cli
       let args:Record<string,unknown>;
       try {args=z.record(z.string(),z.unknown()).parse(JSON.parse(plan.argumentsJson));}
       catch {results.push({tool:tool.name,args:{},result:{inputError:"argumentsJson was not one valid JSON object. Correct the JSON syntax before calling the tool. No tool was executed."}});continue;}
+      // Some REST-backed tools expose query limits as strings; normalize that representation only.
+      const limitSchema=(tool.inputSchema.properties?.limit ?? {}) as {type?:string};
+      if(typeof args.limit==="number" && limitSchema.type==="string")args.limit=String(args.limit);
+      try {validateTool(tool,args);} catch(error) {
+        if(error instanceof AgentTalkieError && error.code==="TOOL_ARGUMENTS_INVALID"){
+          results.push({tool:tool.name,args,result:{inputError:"Inputs did not match the live schema. Correct field types and remove unsupported fields. No call was executed."}});continue;
+        }
+        throw error;
+      }
       // IDs must come from the user's request, earlier displayed results, or this turn's tool output.
       const known=JSON.stringify({question,previous,results});
       for(const [key,value] of Object.entries(args)) if((key==="id"||key.endsWith("_id"))&&typeof value==="string"&&z.uuid().safeParse(value).success&&!known.includes(value))
