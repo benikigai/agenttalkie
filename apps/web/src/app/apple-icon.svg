@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="AgentTalkie">
+  <rect width="180" height="180" rx="40" fill="#2f4a3d"/>
+  <g fill="none" stroke="#eef3ea" stroke-width="12" stroke-linecap="round">
+    <path d="M40 74v32M65 54v72M90 40v100M115 60v60M140 74v32"/>
+  </g>
+</svg>
