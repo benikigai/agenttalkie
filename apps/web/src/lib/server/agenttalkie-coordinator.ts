@@ -23,7 +23,8 @@ export async function interpret(transcript: unknown, previousQuestion: string | 
     if(last?.role===fragment.role)last.text+=fragment.text;
     else conversation.push({...fragment});
   }
-  const latest = conversation.at(-1);
+  // The host may acknowledge before emitting delegation; approval must come from the user.
+  const latest = conversation.findLast(turn => turn.role === "user");
   if (latest?.role === "user" && /^save this document[.!?]*$/i.test(latest.text.trim()))
     return Intent.parse({action:"save_document",question:"save this document",correction:false});
   const classified = Intent.parse(await modelJSON(
