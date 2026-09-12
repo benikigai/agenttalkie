@@ -82,7 +82,7 @@ export function AgentTalkieWorkspace() {
 
   return <div className="at-grid">
     <aside className="at-rail" aria-label="Projects">
-      <p className="at-eyebrow">Projects</p>
+      <p className="at-eyebrow">Workspace</p>
       <div className="at-project-list">
         {[...new Map(snapshot.targets.map((agent) => [agent.projectId, agent])).values()].map((project) =>
           <button className="at-project" key={project.projectId} aria-pressed={project.projectId === target.projectId}
@@ -93,7 +93,7 @@ export function AgentTalkieWorkspace() {
             <Icon name="work" size={17} /><span>{project.projectName}</span>
           </button>)}
       </div>
-      <p className="at-eyebrow" style={{ marginTop: 22 }}>Fleet</p>
+      <p className="at-eyebrow" style={{ marginTop: 22 }}>Agents you can talk to</p>
       <div className="at-agent-list">
         {snapshot.targets.filter((agent) => agent.projectId === target.projectId).map((agent) =>
           <button className="at-agent" key={`${agent.agentId}:${agent.workerSessionId}`} aria-pressed={sameTarget(agent, target)}
