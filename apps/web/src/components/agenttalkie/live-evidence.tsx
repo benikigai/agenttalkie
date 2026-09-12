@@ -10,7 +10,7 @@ const actionVerbs: Record<string, string> = {
   accepted_command: "Accepted",
   provider_request: "Called",
   worker_start: "Started worker",
-  source_returned: "Researched",
+  source_returned: "Returned",
   proposed_action: "Proposed",
   approval: "Approved",
   write_attempt: "Writing",

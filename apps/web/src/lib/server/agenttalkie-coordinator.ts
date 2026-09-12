@@ -1,3 +1,4 @@
+import { runDirectTools, approveDirectTool } from "./agenttalkie-direct-tools";
 import { z } from "zod";
 import { DocumentDraftSchema, documentDraftFormat, prepareDocument, saveDocument } from "./agenttalkie-documents";
 import { configuredWorkplace } from "./workplace";
@@ -5,16 +6,19 @@ import { liveTarget, mutate, load, recordEvent, sql } from "./agenttalkie-live-s
 import { AgentTalkieError } from "./agenttalkie-service";
 import { type WorkerRequest, type WorkerResult, type RequestRecord, WorkerRequestSchema } from "../agenttalkie-contract";
 
-export async function modelJSON(instructions: string, input: unknown, schema: Record<string,unknown>, maxTokens = 900) {
-  const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,"Content-Type":"application/json"},signal:AbortSignal.timeout(30000),body:JSON.stringify({model:"gpt-5.4-mini",store:false,instructions,input:JSON.stringify(input),max_output_tokens:maxTokens,text:{format:{type:"json_schema",name:"command",strict:true,schema}}})});
+export async function modelJSON(instructions: string, input: unknown, schema: Record<string,unknown>, maxTokens = 900, timeoutMs = 30000) {
+  const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,"Content-Type":"application/json"},signal:AbortSignal.timeout(timeoutMs),body:JSON.stringify({model:"gpt-5.4-mini",store:false,instructions,input:JSON.stringify(input),max_output_tokens:maxTokens,text:{format:{type:"json_schema",name:"command",strict:true,schema}}})});
   if(!response.ok) throw new AgentTalkieError(502,"COORDINATOR_UNAVAILABLE","The backend could not interpret this request. No action was taken.");
   const data=await response.json();
   if(data.status!=="completed") throw new AgentTalkieError(502,"COORDINATOR_INCOMPLETE","The backend did not finish interpreting this request.");
-  const text=data.output?.flatMap((x:{content?:{type:string;text?:string}[]})=>x.content??[]).filter((x:{type:string})=>x.type==="output_text").map((x:{text:string})=>x.text).join("");
-  return JSON.parse(text);
+  // Responses may contain several assistant messages. One decision consumes one message;
+  // concatenating distinct JSON objects corrupts the command or skips the requested tool.
+  const message=data.output?.find((x:{content?:{type:string;text?:string}[]})=>x.content?.some(c=>c.type==="output_text"));
+  const text=message?.content.filter((x:{type:string})=>x.type==="output_text").map((x:{text:string})=>x.text).join("");
+  try {return JSON.parse(text);} catch {throw new AgentTalkieError(502,"COORDINATOR_INVALID_JSON","The coordinator returned an invalid command. No action was taken.");}
 }
-export const Intent=z.object({action:z.enum(["orient","list_tasks","research","investigate","review","draft_document","save_document","clarify"]),question:z.string().min(1).max(4000),correction:z.boolean()}).strict();
-const intentSchema={type:"object",properties:{action:{type:"string",enum:["orient","list_tasks","research","investigate","review","draft_document","save_document","clarify"]},question:{type:"string"},correction:{type:"boolean"}},required:["action","question","correction"],additionalProperties:false};
+export const Intent=z.object({action:z.enum(["orient","list_tasks","research","investigate","review","draft_document","save_document","workspace_tool","approve_tool","clarify"]),question:z.string().min(1).max(4000),correction:z.boolean()}).strict();
+const intentSchema={type:"object",properties:{action:{type:"string",enum:["orient","list_tasks","research","investigate","review","draft_document","save_document","workspace_tool","approve_tool","clarify"]},question:{type:"string"},correction:{type:"boolean"}},required:["action","question","correction"],additionalProperties:false};
 export async function interpret(transcript: unknown, previousQuestion: string | null) {
   const fragments = z.array(z.object({role:z.enum(["user","assistant"]),text:z.string()})).parse(transcript);
   const conversation: {role:"user"|"assistant";text:string}[]=[];
@@ -27,8 +31,10 @@ export async function interpret(transcript: unknown, previousQuestion: string | 
   const latest = conversation.findLast(turn => turn.role === "user");
   if (latest?.role === "user" && /^save this document[.!?]*$/i.test(latest.text.trim()))
     return Intent.parse({action:"save_document",question:"save this document",correction:false});
+  if (latest && /^approve workspace action[.!?]*$/i.test(latest.text.trim()))
+    return Intent.parse({action:"approve_tool",question:"approve workspace action",correction:false});
   const classified = Intent.parse(await modelJSON(
-    "Classify the user's latest spoken request, using the conversation only to resolve references. These are streamed transcript fragments that have been joined by speaker; punctuation can be missing and the newest utterance can be incomplete. The previous question is historical context, NEVER a command to repeat. Do not repeat a task read merely because it was previously requested. For greetings, acknowledgments, 'can you hear me', or insufficient new user intent, choose clarify and give a short conversational response. The app connects to the authenticated Ambiguous workspace. Choose list_tasks to list or browse its actual tasks. Choose orient to select/read a named task, read the currently selected task, or understand a task blocking the work. The configured demo task is a real Ambiguous record and can be read when the user explicitly requests it. Never substitute that task for an unrelated named task. Preserve the user's task name or number in question so the backend can resolve it against real returned records. Choose research for public code examples via Exa. Choose investigate for a Codex repository investigation, review for Claude reviewing an existing code artifact. Coding execution may be unavailable; never claim it happened. Choose draft_document for creating or revising a document or job description. Include the user requirements in question. This prepares a draft only, never an external write. Never choose save_document; saving is separately authorized by the exact spoken command save this document after a draft is displayed. For other save/approval phrases choose clarify and instruct the user to review the draft and say exactly save this document. Workspace task listing and selection are supported. Arbitrary document browsing, sending messages, editing existing remote documents and other writes are unsupported; explain that limitation explicitly instead of substituting the demo task. Set correction only when the current user is changing the previous coding/task question. Public research queries must exclude private identifiers and record content.",
+    "Classify the user's latest spoken request, using the conversation only to resolve references. These are streamed transcript fragments that have been joined by speaker; punctuation can be missing and the newest utterance can be incomplete. The previous question is historical context, NEVER a command to repeat. Do not repeat a task read merely because it was previously requested. For greetings, acknowledgments, 'can you hear me', or insufficient new user intent, choose clarify and give a short conversational response. The app connects to the authenticated Ambiguous workspace. Choose list_tasks to list or browse its actual tasks. Choose orient to select/read a named task, read the currently selected task, or understand a task blocking the work. The configured demo task is a real Ambiguous record and can be read when the user explicitly requests it. Never substitute that task for an unrelated named task. Preserve the user's task name or number in question so the backend can resolve it against real returned records. Choose research for public code examples via Exa. Choose investigate for a Codex repository investigation, review for Claude reviewing an existing code artifact. Coding execution may be unavailable; never claim it happened. Choose draft_document for creating or revising a document or job description. Include the user requirements in question. This prepares a draft only, never an external write. Never choose save_document; saving is separately authorized by the exact spoken command save this document after a draft is displayed. For other save/approval phrases choose clarify and instruct the user to review the draft and say exactly save this document. Workspace task listing and selection are supported. Choose workspace_tool for workspace search, browsing or reading documents, sheets, slides, wiki, mail or CRM; creating or updating tasks; editing existing documents; creating sheets/slides; or other explicit workspace operations. The direct connector discovers available tools and previews mutations before execution. Never choose approve_tool: only the exact user command approve workspace action authorizes a displayed action. For other approval phrases choose clarify and explain the exact phrase. New prose document drafts still use draft_document and save_document. Never substitute the demo task for workspace content. Account administration and sharing are not enabled. Set correction only when the current user is changing the previous coding/task question. Public research queries must exclude private identifiers and record content.",
     {conversation,previousQuestion,application:{workspace:"Authenticated Ambiguous workspace",taskConfigured:!!process.env.AMBIGUOUS_API_KEY}},
     intentSchema,
   ));
@@ -39,6 +45,7 @@ export async function interpret(transcript: unknown, previousQuestion: string | 
     if (/\bcodex\b/i.test(text) && !/\bclaude\b/i.test(text)) classified.action = "investigate";
     else if (/\bclaude\b/i.test(text)) classified.action = "review";
   }
+  if (classified.action === "approve_tool") return Intent.parse({action:"clarify",question:"Review the exact workspace action, then say: approve workspace action.",correction:false});
   return classified;
 }
 export async function admit(owner:string,sessionId:string,raw:WorkerRequest) {
@@ -64,7 +71,11 @@ export async function complete(owner:string,sessionId:string,request:WorkerReque
   const selected=intent??await interpret([{role:"user",text:request.question}],null);
   let answer="";let evidence:WorkerResult["evidence"]=[];
   if(selected.action === "save_document" && selected.question !== "save this document") throw new AgentTalkieError(409,"DOCUMENT_APPROVAL_REQUIRED","Review the draft, then say exactly: save this document.");
-  if(selected.action==="orient" || selected.action==="list_tasks"){
+  if(selected.action === "workspace_tool" || selected.action === "approve_tool") {
+   if(selected.action === "approve_tool" && (selected.question !== "approve workspace action" || request.question !== "approve workspace action")) throw new AgentTalkieError(409,"TOOL_APPROVAL_REQUIRED","Review the exact action and say: approve workspace action.");
+   const result=selected.action === "approve_tool" ? await approveDirectTool({owner,sessionId,request}) : await runDirectTools({owner,sessionId,request},selected.question,modelJSON);
+   answer=result.answer;evidence=result.evidence;
+  } else if(selected.action==="orient" || selected.action==="list_tasks"){
    await recordEvent(owner,sessionId,request,"ambiguous","Read live workspace tasks","running");
    const client=configuredWorkplace();
    try {

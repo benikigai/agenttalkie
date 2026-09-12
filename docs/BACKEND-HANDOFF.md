@@ -62,3 +62,15 @@ The outbound runner implements authenticated single-claim jobs, native process r
 Ori prepends model-provider flags before the Codex exec command. Codex's --ignore-user-config drops those prepended settings, so the runner explicitly restores the OpenRouter provider after exec, using the environment credential supplied by Ori. No keys are stored in source. Outer sandbox restrictions exclude global agent instructions and skill inventories; native Codex remains read-only and Claude only has Read/Grep/Glob.
 
 The active demo runner was started with a one-hour limit and ten-job maximum against public snapshot c89bef2e8f6daa396e1484ec281d4042862666fa. It performed two production verification jobs. Coding investigations and reviews are read-only; no code changes are applied or deployed by a worker. UI integrations through PR #16 preserve the live controls and current-conversation Activity feed.
+
+## Direct Ambiguous tools
+
+The direct connector discovers the live MCP catalog and selects tools for each explicit workspace request. It validates all inputs against the provider schema. Reads run immediately. Mutations stop at an exact input preview; the user says `approve workspace action` or uses the matching button. A durable compare-and-set claim binds the action, schema, prior record snapshot, owner and current thread revision. Replays return saved receipts; uncertain outcomes never trigger an automatic second mutation. Existing document draft/save controls remain supported.
+
+The catalog observed during implementation contained 856 tools: 268 read tools, 458 actions requiring approval and 130 excluded account/administration/sharing/autonomous-agent tools. Catalog presence does not prove the credential permits every tool. Provider permission failures are shown as failures. No autonomous Ambiguous assistant is invoked. Up to four planning steps run per request; follow-up turns can continue longer workflows.
+
+Activity shows real tool names, bounded input/result excerpts and returned record IDs. Document responses link to the actual document. The real Ambiguous workspace must remain a separate browser tab/window because it sends `frame-ancestors 'self'` and `X-Frame-Options: SAMEORIGIN`.
+
+Validation: `npm run verify`; `scripts/check-direct-tools.ts` tests actual durable claims with mocked provider writes; `scripts/check-direct-live.ts` exercises real model selection and workspace reads. Its optional `--write-demo-task` creates one unassigned verification task and keeps that provider record. Never use it for cleanup or destructive checks. Credentials come from the existing ignored 1Password reference file and database environment file.
+
+The coordinator now consumes the first structured assistant message per decision. Responses can contain multiple assistant messages; joining their JSON previously corrupted requests. A regression test covers that response shape.
