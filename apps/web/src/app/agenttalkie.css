@@ -103,6 +103,8 @@
 .at-tools-off { background: #c3c7bc; }
 .at-tools-locked { background: #c08a4a; }
 .at-tools-name { font-size: 12px; font-weight: 600; white-space: normal; overflow-wrap: anywhere; }
+.at-tools-item-off .at-tools-name { color: var(--at-muted); font-weight: 500; }
+.at-tools-note { display: inline-block; margin-left: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #8a6a45; background: #f5ecdf; border-radius: var(--at-r-pill); padding: 1px 6px; white-space: nowrap; }
 .at-tools-provider { grid-column: 2; font-size: 11px; color: var(--at-muted); white-space: normal; overflow-wrap: anywhere; min-width: 0; }
 .at-rail-note { margin-top: auto; padding: 0 12px; color: var(--at-muted); font-size: var(--at-t-meta); line-height: 1.5; }
 .at-rail-note p + p { margin-top: 7px; }
