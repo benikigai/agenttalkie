@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createLiveVoiceController, type LiveVoiceController, type LiveVoiceState, type TranscriptSnapshot } from "@/lib/voice/live-controller";
 import { useAgentTalkie } from "./provider";
 import { Icon } from "./icons";
-import { SoundBar, type AudioSources } from "./sound-bar";
+import { SoundBar, type AudioActivity, type AudioSources } from "./sound-bar";
 
 export function VoiceDock() {
   const workspace = useAgentTalkie();
@@ -27,7 +27,9 @@ export function VoiceDock() {
   const localEpoch = useRef(0);
   const [localConnecting, setLocalConnecting] = useState(false);
   const [localMuted, setLocalMuted] = useState(false);
+  const [activity, setActivity] = useState<AudioActivity>({ input: false, output: false });
   const meterSources = useMemo(() => localStream ? { input: localStream, output: null } : sources, [localStream, sources]);
+  const updateActivity = useCallback((next: AudioActivity) => setActivity(next), []);
 
   useEffect(() => {
     let active = true;
@@ -71,9 +73,9 @@ export function VoiceDock() {
   const sessionEnded = workspace.snapshot.session.status === "ended";
   const canAsk = workspace.ready && !sessionEnded && !workspace.submitting;
   const activeRequest = workspace.currentRequest;
-  const requestStatus = activeRequest?.state === "pending" ? "Waiting for agent" : activeRequest?.state === "unavailable" ? "Agent unavailable" : activeRequest?.state === "failed" ? "Request failed" : workspace.answer ? "Answer ready" : "Ready for your question";
-  const micStatus = localStream ? localMuted ? "Local mic muted" : "Local mic test" : connected ? voice.muted ? "Mic muted" : "Mic on" : connecting ? "Connecting microphone" : voice.status === "ending" ? "Ending voice" : sessionEnded ? "Conversation ended" : "Mic off";
-  const status = workspace.loading ? "Opening workspace…" : sessionEnded ? "Conversation ended · Mic off" : `${micStatus} · ${requestStatus}`;
+  const requestPending = workspace.submitting || activeRequest?.state === "pending";
+  const voiceState = workspace.loading ? "Opening workspace" : voice.error || activeRequest?.state === "failed" || activeRequest?.state === "unavailable" ? "Needs attention" : sessionEnded ? "Conversation ended" : activity.output ? "Speaking" : activity.input ? "Listening" : muted ? "Muted" : requestPending ? "Working" : connecting ? "Connecting" : localStream ? "Mic ready" : workspace.answer ? "Answer ready" : "Ready";
+  const statusDetail = localStream ? "Local mic only" : requestPending ? "Waiting for agent" : activeRequest?.state === "failed" ? "Request failed" : activeRequest?.state === "unavailable" ? "Agent unavailable" : workspace.snapshot.session.mode === "fixture" ? "Fixture workspace" : connected ? "Live voice" : "Voice available";
 
   const talk = async () => {
     setNotice(null);
@@ -84,14 +86,13 @@ export function VoiceDock() {
     }
     if (sessionEnded) { await workspace.start(); return; }
     if (workspace.snapshot.session.mode === "fixture") {
-      setNotice("Live voice is not connected. Test your microphone locally, or type a question.");
-      setComposerOpen(true);
+      await testMicrophone();
       return;
     }
     await controller.current?.start(workspace.snapshot.session.id).catch(() => {});
   };
 
-  const testMicrophone = async () => {
+  async function testMicrophone() {
     if (localRef.current || localConnecting || voice.status === "connected") return;
     const generation = ++localEpoch.current;
     setLocalConnecting(true); setNotice(null);
@@ -100,7 +101,7 @@ export function VoiceDock() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
       if (generation !== localEpoch.current) { stream.getTracks().forEach((track) => track.stop()); return; }
       localRef.current = stream; setLocalStream(stream); setLocalMuted(false);
-      setNotice("Local microphone test. Audio is not recorded or sent. Agent audio will appear when live voice is connected.");
+      setNotice(null);
       for (const track of stream.getAudioTracks()) track.addEventListener("ended", () => {
         if (localRef.current !== stream) return;
         localRef.current = null; setLocalStream(null); setNotice("Microphone disconnected. You can keep working by typing.");
@@ -108,7 +109,7 @@ export function VoiceDock() {
     } catch (cause) {
       if (generation === localEpoch.current) setNotice(cause instanceof Error && cause.name === "NotAllowedError" ? "Microphone access was denied. Allow access in the browser, or keep typing." : cause instanceof Error ? cause.message : "Microphone unavailable.");
     } finally { if (generation === localEpoch.current) setLocalConnecting(false); }
-  };
+  }
 
   const send = async (correction: boolean) => {
     if (!canAsk || !text.trim()) return;
@@ -129,7 +130,9 @@ export function VoiceDock() {
     await Promise.all([controller.current?.end(), workspace.end()]);
   };
 
-  return <section className={`at-dock-position${composerOpen || transcriptOpen ? " at-dock-expanded" : ""}`} aria-label="Persistent voice dock">
+  const primaryLabel = connecting ? "Connecting" : connected ? muted ? "Unmute" : "Mute" : sessionEnded ? "New conversation" : workspace.snapshot.session.mode === "fixture" ? "Check mic" : "Start voice";
+
+  return <section className={`at-dock-position${composerOpen || transcriptOpen || !!notice ? " at-dock-expanded" : ""}`} aria-label="Persistent voice dock">
     <div className="at-dock">
       {notice && <p className="at-dock-message" role="status">{notice}</p>}
       {composerOpen && <form className="at-composer" onSubmit={(event) => { event.preventDefault(); void send(false); }}>
@@ -141,15 +144,20 @@ export function VoiceDock() {
         </div></div>
       </form>}
       {transcriptOpen && transcript && <div className="at-composer" aria-label="Voice transcript" style={{ maxHeight: 160, overflowY: "auto" }}>{transcript.fragments.map((fragment) => <p key={fragment.eventId} style={{ fontSize: 12, marginBottom: 8 }}><strong>{fragment.role === "user" ? "You" : "Voice"}:</strong> {fragment.text}</p>)}</div>}
-      <SoundBar sources={meterSources} muted={muted} local={!!localStream} />
-      <p className="at-dock-status" role="status" aria-live="polite" data-voice-status={localStream ? "local-test" : voice.status}>{status}</p>
-      <div className="at-dock-controls">
+      <div className="at-voice-row">
+        <div className="at-voice-summary">
+          <strong>{workspace.target.agentName}</strong>
+          <span className="at-voice-state" role="status" aria-live="polite" data-voice-status={localStream ? "local-test" : voice.status}><span className="at-voice-dot" />{voiceState}</span>
+          <small>{statusDetail}</small>
+        </div>
+        <SoundBar sources={meterSources} muted={muted} local={!!localStream} onActivity={updateActivity} />
+        <div className="at-dock-controls">
         <button className="at-dock-keyboard" aria-expanded={composerOpen} aria-controls="agenttalkie-question" onClick={() => setComposerOpen((open) => !open)}><Icon name="keyboard" size={15} />Type</button>
-        <button className="at-talk" aria-label={connected ? muted ? "Unmute microphone" : "Mute microphone" : undefined} aria-pressed={connected ? muted : undefined} disabled={workspace.loading || connecting || voice.status === "ending" || (!workspace.ready && !sessionEnded && !connected)} onClick={() => void talk()}><Icon name={connected && muted ? "muted" : "mic"} size={20} />{connecting ? "Connecting" : connected ? muted ? "Unmute" : "Mute" : sessionEnded ? "New conversation" : "Talk"}</button>
+        <button className="at-talk" aria-label={connected ? muted ? "Unmute microphone" : "Mute microphone" : primaryLabel} aria-pressed={connected ? muted : undefined} disabled={workspace.loading || connecting || voice.status === "ending" || (!workspace.ready && !sessionEnded && !connected)} onClick={() => void talk()}><Icon name={connected && muted ? "muted" : "mic"} size={19} />{primaryLabel}</button>
         {!sessionEnded && (workspace.ready || connected || connecting) && <button className="at-icon-button at-end" aria-label={localStream || localConnecting ? "Stop microphone test" : "End conversation"} title={localStream || localConnecting ? "Stop microphone test" : "End conversation"} onClick={() => void end()}><Icon name="end" size={19} /></button>}
         {transcript && <button className="at-icon-button" aria-label="Show voice transcript" aria-pressed={transcriptOpen} onClick={() => setTranscriptOpen((open) => !open)}><Icon name="source" size={17} /></button>}
+        </div>
       </div>
-      {workspace.snapshot.session.mode === "fixture" && !connected && !connecting && !sessionEnded && <button className="at-audio-check" onClick={() => void testMicrophone()}>Test microphone <span>Local only</span></button>}
       {voice.playbackBlocked && <button className="at-button" onClick={() => void controller.current?.resumeAudio()}>Enable audio playback</button>}
       {voice.status === "ended" && !voice.closeConfirmed && voice.liveSessionId && <p className="at-dock-status">Microphone stopped. Provider session closure was not confirmed.</p>}
     </div>
