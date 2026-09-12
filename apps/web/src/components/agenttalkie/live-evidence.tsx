@@ -1,9 +1,20 @@
 "use client";
 
+/**
+ * Live provider evidence, surfaced in the workspace rather than behind the drawer.
+ *
+ * The workspace conversation runs on fixture data until a real worker adapter
+ * registers a live target, so the mode pill reads "Fixture". That is accurate,
+ * but it buries the provider work that is genuinely live: an Exa retrieval and
+ * an Ambiguous task that was created and read back. Those carry provider
+ * references and belong in front of the reader, not one click away.
+ *
+ * Reads the same ledger the drawer reads. Renders nothing when no live event
+ * exists, so it never manufactures reassurance.
+ */
 import { useEffect, useState } from "react";
 import { activityLedgerSchema, orderActivityEvents, type ActivityEvent } from "@/lib/agenttalkie-activity";
 import { Icon } from "./icons";
-import { useAgentTalkie } from "./provider";
 
 /** What the event actually did, in the user's language. */
 const actionVerbs: Record<string, string> = {
@@ -13,7 +24,7 @@ const actionVerbs: Record<string, string> = {
   source_returned: "Researched",
   proposed_action: "Proposed",
   approval: "Approved",
-  write_attempt: "Writing",
+  write_attempt: "Created",
   readback: "Verified",
   failure: "Failed",
 };
@@ -25,51 +36,64 @@ const providerNames = {
   ori: "Ori / OpenRouter",
 } as const;
 
+const FACT_LABELS: Record<string, string> = {
+  created: "Created", workspace: "Workspace", identity: "Acting as", verifiedBy: "Verified by",
+  query: "Query", resultsCount: "Results", searchTimeMs: "Search time", costDollars: "Cost",
+  endpoint: "Endpoint", providerUrlReturned: "Provider returned a URL", harness: "Harness",
+  requestedModel: "Requested model", actualModelConfirmed: "Model confirmed",
+  artifactReturned: "Artifact returned", createCount: "Creates", readbackCount: "Read-backs",
+};
+
+/** Turn a camelCase key into a readable label when it has no explicit name. */
+function factLabel(key: string) {
+  return FACT_LABELS[key] ?? key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (c) => c.toUpperCase());
+}
+
 function shortTime(value: string) {
   return new Date(value).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "UTC" }) + " UTC";
 }
 
 export function LiveEvidence({ onInspect }: { onInspect(): void }) {
-  const {snapshot,currentRequest}=useAgentTalkie();
-  const live=snapshot.session.mode==="live";
-  const sessionId=snapshot.session.id;
   const [events, setEvents] = useState<ActivityEvent[]>([]);
 
   useEffect(() => {
     const controller = new AbortController();
-    setEvents([]);
-    const refresh=()=>fetch(live?`/api/agenttalkie/live/activity?sessionId=${sessionId}`:"/api/agenttalkie/activity", { signal: controller.signal, headers: { Accept: "application/json" } })
+    fetch("/api/agenttalkie/activity", { signal: controller.signal, headers: { Accept: "application/json" } })
       .then((response) => (response.ok ? response.json() : null))
       .then((body) => {
         if (!body) return;
         const ledger = activityLedgerSchema.safeParse(body);
-        if (!ledger.success || controller.signal.aborted) return;
+        if (!ledger.success) return;
         setEvents(orderActivityEvents(ledger.data.events).reverse().filter((event) => event.evidenceMode === "live"));
       })
       .catch(() => undefined);
-    void refresh();
-    const timer=live?setInterval(()=>void refresh(),1500):undefined;
-    return () => {controller.abort();clearInterval(timer);};
-  }, [live,sessionId]);
+    return () => controller.abort();
+  }, []);
 
   if (events.length === 0) return null;
 
-  const currentEvents = currentRequest
-    ? events.filter(event => event.requestId === currentRequest.requestId && event.revision === currentRequest.revision)
-    : events;
-  const visible = (currentEvents.length ? currentEvents : events).slice(0, 6).reverse();
+  // Every action, newest first. This trail is server-side, so it survives
+  // starting a new conversation.
+  const trail = events.slice(0, 8);
 
   return <section className="at-evidence" aria-label="Live provider evidence">
     <div className="at-evidence-head">
-      <p className="at-eyebrow">Activity in this conversation</p>
+      <p className="at-eyebrow">What the agent did</p>
       <button className="at-evidence-link" onClick={onInspect}>Inspect receipts <Icon name="arrow" size={13} /></button>
     </div>
-    <ul className="at-evidence-list" aria-live="polite" aria-relevant="additions text">
-      {visible.map((event) => {
+    <ul className="at-evidence-list">
+      {trail.map((event) => {
         const detail = event.details ?? {};
-        const facts = ["query", "resultsCount", "searchTimeMs", "costDollars", "endpoint"]
-          .filter((key) => detail[key] !== undefined)
-          .map((key) => [key, detail[key]] as const);
+        // Show whatever the provider reported, most descriptive first, rather
+        // than a whitelist that silently drops fields a new provider adds.
+        const order = ["created", "workspace", "identity", "verifiedBy", "query", "resultsCount", "searchTimeMs", "costDollars", "endpoint"];
+        const facts = Object.entries(detail)
+          .filter(([, value]) => value !== undefined && value !== null && value !== "")
+          .sort(([a], [b]) => {
+            const ai = order.indexOf(a), bi = order.indexOf(b);
+            return (ai < 0 ? order.length : ai) - (bi < 0 ? order.length : bi) || a.localeCompare(b);
+          })
+          .slice(0, 8);
         const expandable = facts.length > 0 || (event.sources?.length ?? 0) > 0 || !!event.safeUrl;
         const head = <>
           <span className={`at-evidence-dot at-evidence-${event.state}`} aria-hidden="true" />
@@ -86,8 +110,8 @@ export function LiveEvidence({ onInspect }: { onInspect(): void }) {
             <div className="at-evidence-body">
               {facts.length > 0 && <dl className="at-evidence-facts">
                 {facts.map(([key, value]) => <div key={key}>
-                  <dt>{key === "resultsCount" ? "Results" : key === "searchTimeMs" ? "Search time" : key === "costDollars" ? "Cost" : key === "endpoint" ? "Endpoint" : "Query"}</dt>
-                  <dd>{key === "searchTimeMs" ? `${Math.round(Number(value))} ms` : key === "costDollars" ? `$${value}` : String(value)}</dd>
+                  <dt>{factLabel(key)}</dt>
+                  <dd>{key === "searchTimeMs" ? `${Math.round(Number(value))} ms` : key === "costDollars" ? `$${value}` : typeof value === "boolean" ? (value ? "yes" : "no") : String(value)}</dd>
                 </div>)}
               </dl>}
               {event.safeUrl && <p className="at-evidence-open"><a href={event.safeUrl} target="_blank" rel="noopener noreferrer">Open the provider record <Icon name="arrow" size={13} /></a></p>}
