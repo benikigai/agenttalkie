@@ -21,6 +21,7 @@ export function VoiceDock() {
   const [spokenRequest, setSpokenRequest] = useState<{ requestId: string; revision: number; delegationId: string } | null>(null);
   const composerRevision = useRef(0);
   const textarea = useRef<HTMLTextAreaElement>(null);
+  const transcriptScroll = useRef<HTMLDivElement>(null);
   const [sources, setSources] = useState<AudioSources>({ input: null, output: null });
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const localRef = useRef<MediaStream | null>(null);
@@ -30,6 +31,12 @@ export function VoiceDock() {
   const [activity, setActivity] = useState<AudioActivity>({ input: false, output: false });
   const meterSources = useMemo(() => localStream ? { input: localStream, output: null } : sources, [localStream, sources]);
   const updateActivity = useCallback((next: AudioActivity) => setActivity(next), []);
+
+  // Speech keeps arriving while the panel is open; the newest line must stay in view.
+  useEffect(() => {
+    const node = transcriptScroll.current;
+    if (node) node.scrollTop = node.scrollHeight;
+  }, [transcript?.inputText, transcript?.outputText, transcriptOpen]);
 
   useEffect(() => {
     let active = true;
@@ -160,7 +167,18 @@ export function VoiceDock() {
           <button type="submit" className="at-button at-button-primary" disabled={!canAsk || !text.trim()}>{workspace.submitting ? "Submitting…" : activeRequest ? "Ask new question" : "Ask agent"}<Icon name="arrow" size={14} /></button>
         </div></div>
       </form>}
-      {transcriptOpen && transcript && <div className="at-composer" aria-label="Voice transcript" style={{ maxHeight: 160, overflowY: "auto" }}><p style={{fontSize:12,marginBottom:8}}><strong>You:</strong> {transcript.inputText.slice(-600) || "Listening…"}</p><p style={{fontSize:12}}><strong>Voice:</strong> {transcript.outputText.slice(-600)}</p></div>}
+      {transcriptOpen && transcript && <div className="at-transcript" aria-label="Voice transcript">
+        <div className="at-transcript-scroll" ref={transcriptScroll} aria-live="polite">
+          <div className="at-transcript-turn at-transcript-you">
+            <p className="at-transcript-who">You</p>
+            <p className="at-transcript-text">{transcript.inputText.slice(-900) || "Listening…"}</p>
+          </div>
+          {transcript.outputText && <div className="at-transcript-turn at-transcript-agent">
+            <p className="at-transcript-who">{workspace.target.agentName}</p>
+            <p className="at-transcript-text">{transcript.outputText.slice(-900)}</p>
+          </div>}
+        </div>
+      </div>}
       <div className="at-voice-row">
         <div className="at-voice-summary">
           <strong>{workspace.target.agentName}</strong>
