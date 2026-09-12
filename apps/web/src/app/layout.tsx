@@ -7,7 +7,7 @@ import "./globals.css";
 import "./agenttalkie.css";
 
 export const metadata: Metadata = {
-  title: "AgentTalkie | Pick up the conversation",
+  title: "AgentTalkie",
   description: "Talk to your agents about their work, review sourced answers, and prepare the next step.",
 };
 
