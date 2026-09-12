@@ -33,6 +33,12 @@ export async function interpret(transcript: unknown, previousQuestion: string | 
     intentSchema,
   ));
   if (classified.action === "save_document") return Intent.parse({action:"clarify",question:"Review the draft, then say exactly: save this document.",correction:false});
+  // A named harness wins over the classifier's generic interpretation of "review".
+  if (classified.action === "investigate" || classified.action === "review") {
+    const text = latest?.text ?? "";
+    if (/\bcodex\b/i.test(text) && !/\bclaude\b/i.test(text)) classified.action = "investigate";
+    else if (/\bclaude\b/i.test(text)) classified.action = "review";
+  }
   return classified;
 }
 export async function admit(owner:string,sessionId:string,raw:WorkerRequest) {
