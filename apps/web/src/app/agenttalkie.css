@@ -120,6 +120,24 @@
 .at-tab-count { background: var(--at-accent-soft); color: #4a5a4c; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--at-r-pill); }
 .at-stage { padding-top: 28px; }
 
+/* Live provider evidence: the real work, kept in front of the reader. */
+.at-evidence { margin-top: 24px; border: 1px solid var(--at-line); border-radius: var(--at-r-md); background: var(--at-surface); box-shadow: var(--at-shadow-sm); overflow: hidden; }
+.at-evidence-head { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--at-line); background: linear-gradient(180deg, rgba(63,138,92,.05), transparent); }
+.at-evidence-head .at-eyebrow { margin-right: auto; }
+.at-evidence-link { display: inline-flex; align-items: center; gap: 6px; font-size: var(--at-t-meta); font-weight: 600; color: var(--at-accent); border-radius: var(--at-r-pill); padding: 4px 6px; }
+.at-evidence-link:hover { background: var(--at-accent-soft); }
+.at-evidence-list { list-style: none; margin: 0; padding: 0; }
+.at-evidence-item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; font-size: 13px; border-top: 1px solid #f0f0ea; flex-wrap: wrap; }
+.at-evidence-item:first-child { border-top: 0; }
+.at-evidence-dot { width: 7px; height: 7px; border-radius: 50%; background: #3f8a5c; flex: 0 0 auto; }
+.at-evidence-interrupted, .at-evidence-partial, .at-evidence-blocked, .at-evidence-failed { background: #c08a4a; }
+.at-evidence-pending, .at-evidence-running { background: #6d7a6b; }
+.at-evidence-provider { font-weight: 700; white-space: nowrap; }
+.at-evidence-title { color: var(--at-muted); min-width: 0; flex: 1 1 200px; }
+.at-evidence-meta { color: var(--at-muted); font-size: var(--at-t-meta); white-space: nowrap; }
+.at-evidence-ref { font-family: "Spline Sans Mono", ui-monospace, monospace; font-size: 11px; background: var(--at-accent-soft); color: #44543f; padding: 2px 7px; border-radius: var(--at-r-sm); }
+
+
 .at-intro { max-width: 620px; padding: 12px 0 24px; }
 .at-intro h2 { font-size: var(--at-t-section); line-height: 1.25; letter-spacing: -.6px; font-weight: 700; margin-bottom: 10px; }
 .at-intro p { color: var(--at-muted); font-size: 15px; max-width: 48ch; }
@@ -193,10 +211,25 @@
 .at-voice-state { color: #d5dfd1; font-size: var(--at-t-meta); display: inline-flex; align-items: center; gap: 6px; }
 .at-voice-summary .at-voice-state { color: var(--at-muted); margin-top: 0; }
 .at-dock-expanded .at-voice-summary .at-voice-state { color: #d5dfd1; }
-.at-voice-dot { width: 6px; height: 6px; border-radius: 50%; background: #9fc6ac; box-shadow: 0 0 0 3px rgba(159, 198, 172, .18); flex: 0 0 auto; }
-.at-voice-state[data-voice-status="listening"] .at-voice-dot, .at-voice-state[data-voice-status="active"] .at-voice-dot { animation: at-pulse 1.8s ease-in-out infinite; }
-.at-voice-state[data-voice-status="error"] .at-voice-dot { background: #efbd8f; }
-@keyframes at-pulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(159, 198, 172, .18); } 50% { box-shadow: 0 0 0 7px rgba(159, 198, 172, .06); } }
+/* Voice state is the one thing a viewer must read at a glance on camera:
+   green means a live provider session, amber means attention, grey means inert. */
+.at-voice-dot { width: 7px; height: 7px; border-radius: 50%; background: #6d7a6b; box-shadow: 0 0 0 3px rgba(109, 122, 107, .14); flex: 0 0 auto; transition: background .2s ease; }
+.at-voice-state[data-voice-status="connected"] .at-voice-dot,
+.at-voice-state[data-voice-status="active"] .at-voice-dot,
+.at-voice-state[data-voice-status="listening"] .at-voice-dot { background: #3f8a5c; box-shadow: 0 0 0 3px rgba(63, 138, 92, .18); }
+.at-voice-state[data-voice-status="active"] .at-voice-dot,
+.at-voice-state[data-voice-status="listening"] .at-voice-dot { animation: at-pulse 1.8s ease-in-out infinite; }
+.at-voice-state[data-voice-status="connecting"] .at-voice-dot,
+.at-voice-state[data-voice-status="ending"] .at-voice-dot { background: #c08a4a; animation: at-blink 1s ease-in-out infinite; }
+.at-voice-state[data-voice-status="local-test"] .at-voice-dot { background: #4a7fb5; box-shadow: 0 0 0 3px rgba(74, 127, 181, .18); animation: at-pulse-blue 1.8s ease-in-out infinite; }
+.at-voice-state[data-voice-status="error"] .at-voice-dot,
+.at-voice-state[data-voice-status="disconnected"] .at-voice-dot { background: #c2643a; box-shadow: 0 0 0 3px rgba(194, 100, 58, .18); }
+.at-voice-state[data-voice-status="ended"] .at-voice-dot,
+.at-voice-state[data-voice-status="idle"] .at-voice-dot { background: #9aa398; box-shadow: none; }
+.at-voice-state[data-voice-status="error"], .at-voice-state[data-voice-status="disconnected"] { color: #a8542c; font-weight: 600; }
+@keyframes at-pulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(63, 138, 92, .18); } 50% { box-shadow: 0 0 0 8px rgba(63, 138, 92, .05); } }
+@keyframes at-pulse-blue { 0%, 100% { box-shadow: 0 0 0 3px rgba(74, 127, 181, .18); } 50% { box-shadow: 0 0 0 8px rgba(74, 127, 181, .05); } }
+@keyframes at-blink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
 .at-dock-controls { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
 .at-icon-button { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; background: #33433a; color: #edf2e8; border: 1px solid #4e5d53; border-radius: 50%; transition: background .16s ease, border-color .16s ease; }
@@ -264,15 +297,26 @@
   .at-voice-row { grid-template-columns: minmax(78px, 110px) minmax(40px, 1fr) auto; gap: 8px; }
   .at-voice-summary small { display: none; }
   .at-dock-controls { gap: 5px; }
-  .at-icon-button { width: 40px; height: 40px; }
-  .at-shell .at-dock-keyboard { width: 40px; min-height: 40px; padding: 0; justify-content: center; font-size: 0; overflow: hidden; }
+  .at-icon-button { width: 44px; height: 44px; }
+  .at-shell .at-dock-keyboard { width: 44px; min-height: 44px; padding: 0; justify-content: center; font-size: 0; overflow: hidden; }
   .at-shell .at-dock-keyboard svg { width: 16px; height: 16px; }
-  .at-shell .at-talk { width: 40px; min-height: 40px; padding: 0; font-size: 0; overflow: hidden; }
+  .at-shell .at-talk { width: 44px; min-height: 44px; padding: 0; font-size: 0; overflow: hidden; }
   .at-shell .at-talk svg { width: 19px; height: 19px; }
   .at-composer-footer { align-items: flex-start; }
   .at-composer-footer .at-actions { gap: 6px; }
   .at-dock-expanded .at-dock { max-height: 55dvh; overflow-y: auto; }
   .at-facts { grid-template-columns: 1fr; gap: 12px; }
+  .at-evidence-item { gap: 7px; padding: 10px 13px; }
+  .at-evidence-title { flex-basis: 100%; order: 3; }
+  .at-evidence-meta { order: 4; }
+  .at-activity-layer { inset: 66px 0 0; }
+  .at-activity { width: 100%; padding: 20px 18px 190px; border-left: 0; }
+  .at-activity-header h2 { font-size: 24px; }
+  .at-activity-row-head { flex-wrap: wrap; gap: 6px; }
+  .at-activity-row-head time { margin-left: 0; width: 100%; }
+  .at-provenance { width: 100%; }
+  .at-voice-summary { max-width: calc(100vw - 40px); overflow: hidden; }
+  .at-voice-summary strong { overflow: hidden; text-overflow: ellipsis; }
 }
 @media (min-width: 801px) and (max-height: 780px) {
   .at-main { padding-top: 12px; }
