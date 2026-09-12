@@ -77,12 +77,13 @@
 
 /* Layout */
 .at-grid { display: grid; grid-template-columns: 224px minmax(0, 1fr); min-height: 0; overflow-y: auto; }
-.at-rail { border-right: 1px solid var(--at-line); padding: 32px 16px 210px; display: flex; flex-direction: column; gap: 20px; }
+.at-rail { border-right: 1px solid var(--at-line); padding: 32px 16px 210px; display: flex; flex-direction: column; gap: 20px; min-width: 0; overflow: hidden; }
 .at-eyebrow { color: var(--at-muted); font-size: var(--at-t-meta); text-transform: uppercase; letter-spacing: 1.6px; font-weight: 600; }
 .at-rail .at-eyebrow { padding: 0 12px; }
 .at-workspace-name { padding: 0 12px; font-size: var(--at-t-body); margin-top: 8px; font-weight: 600; }
 .at-agent-list { display: grid; gap: 6px; margin-top: 14px; }
-.at-agent { border: 1px solid transparent; text-align: left; padding: 13px 12px; border-radius: var(--at-r-md); width: 100%; display: flex; align-items: flex-start; gap: 12px; transition: background .16s ease, border-color .16s ease; }
+.at-agent { border: 1px solid transparent; text-align: left; padding: 13px 12px; border-radius: var(--at-r-md); width: 100%; min-width: 0; max-width: 100%; overflow: hidden; display: flex; align-items: flex-start; gap: 12px; transition: background .16s ease, border-color .16s ease; }
+.at-agent > span:last-child { min-width: 0; flex: 1 1 auto; }
 .at-agent:hover { background: rgba(47, 74, 61, .05); }
 .at-agent[aria-pressed="true"] { background: var(--at-accent-soft); border-color: #dbe3d7; }
 .at-agent-monogram { width: 34px; height: 34px; border: 1px solid #d9dfd4; background: #e7eddf; color: #43614a; font-size: 15px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0; border-radius: 11px; }
@@ -90,7 +91,7 @@
 .at-agent-status .at-dot { width: 5px; height: 5px; }
 .at-agent-status-available { color: #4d7a5e; }
 .at-agent-status-unavailable { color: #a4794f; }
-.at-agent strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.at-agent strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .at-rail-note { margin-top: auto; padding: 0 12px; color: var(--at-muted); font-size: var(--at-t-meta); line-height: 1.5; }
 .at-rail-note p + p { margin-top: 7px; }
 .at-project-list { display: grid; gap: 6px; }
@@ -207,11 +208,11 @@
 /* Floating dock: a companion riding above the work, not browser chrome. */
 .at-dock-position { z-index: 30; margin-left: 224px; min-width: 0; padding: 0 clamp(14px, 2.4vw, 28px) clamp(18px, 2.4vw, 30px); pointer-events: none; display: flex; justify-content: center; }
 /* Atlas cue: a small centered pill, with the state spoken above it rather than inside. */
-.at-dock { position: relative; pointer-events: auto; border: 1px solid #3b4a40; background: rgba(28, 41, 33, .95); backdrop-filter: blur(16px); color: #eef1e9; border-radius: var(--at-r-pill); box-shadow: var(--at-shadow-dock); padding: 9px 14px max(9px, env(safe-area-inset-bottom)); width: auto; max-width: min(620px, 100%); margin: 0 auto; }
+.at-dock { position: relative; pointer-events: auto; overflow: hidden; border: 1px solid #3b4a40; background: rgba(28, 41, 33, .95); backdrop-filter: blur(16px); color: #eef1e9; border-radius: var(--at-r-pill); box-shadow: var(--at-shadow-dock); padding: 9px 14px max(9px, env(safe-area-inset-bottom)); width: auto; max-width: min(620px, 100%); margin: 0 auto; }
 .at-dock-expanded .at-dock { border-radius: var(--at-r-lg); max-width: min(760px, 100%); padding: 14px 18px max(14px, env(safe-area-inset-bottom)); }
-.at-voice-row { min-height: 46px; display: flex; align-items: center; gap: 14px; min-width: 0; }
+.at-voice-row { min-height: 46px; display: flex; align-items: center; gap: 12px; min-width: 0; flex-wrap: wrap; }
 /* Floated above the pill: the workspace says what it is doing, the way Atlas does. */
-.at-voice-summary { position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 9px; white-space: nowrap; text-align: center; line-height: 1.3; pointer-events: none; }
+.at-voice-summary { position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); max-width: 100%; display: flex; align-items: center; gap: 9px; white-space: nowrap; text-align: center; line-height: 1.3; pointer-events: none; }
 .at-voice-summary strong { font-size: 13px; font-weight: 600; color: var(--at-ink); }
 .at-voice-summary small { color: var(--at-muted); font-size: 12px; }
 .at-dock-expanded .at-voice-summary { position: static; transform: none; justify-content: flex-start; margin-bottom: 10px; }
@@ -245,11 +246,11 @@
 .at-icon-button:hover:not(:disabled) { background: #3e5044; }
 .at-icon-button[aria-pressed="true"] { border-color: #a1b79f; background: #455c49; }
 .at-end { color: #efbc9a; background: #40392e; border-color: #635744; }
-.at-talk { background: #e7efe2; border: 1px solid #e7efe2; border-radius: var(--at-r-pill); min-height: 42px; padding: 0 20px; color: #1e3627; display: inline-flex; gap: 8px; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; white-space: nowrap; transition: background .16s ease, transform .16s ease; }
+.at-talk { background: #e7efe2; border: 1px solid #e7efe2; border-radius: var(--at-r-pill); min-height: 42px; padding: 0 18px; max-width: 210px; overflow: hidden; text-overflow: ellipsis; color: #1e3627; display: inline-flex; gap: 8px; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; white-space: nowrap; transition: background .16s ease, transform .16s ease; }
 .at-talk:hover:not(:disabled) { transform: translateY(-1px); }
 .at-talk[aria-pressed="true"] { background: #b9c9b7; }
 .at-dock-keyboard { color: #e1e8db; border: 1px solid #5d6c58; min-height: 42px; padding: 7px 16px; border-radius: var(--at-r-pill); font-size: var(--at-t-meta); font-weight: 600; display: flex; align-items: center; gap: 7px; }
-.at-sound-bar { min-width: 84px; flex: 1 1 auto; position: relative; display: flex; align-items: center; }
+.at-sound-bar { min-width: 60px; flex: 1 1 60px; position: relative; display: flex; align-items: center; }
 .at-sound-bar canvas { display: block; width: 100%; height: 26px; }
 .at-meter-error { position: absolute; right: 0; bottom: 0; font-size: var(--at-t-meta); color: #e7b88d; }
 
