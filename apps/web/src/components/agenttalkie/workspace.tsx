@@ -114,11 +114,11 @@ export function AgentTalkieWorkspace() {
         <h1>{answer ? finding.headline : "What needs you right now?"}</h1>
         {answer
           ? <ProvenanceStrip result={answer} agentName={target.agentName} />
-          : <p className="at-heading-description">Ask your agents what changed, what is blocked, and what needs your decision. Every answer arrives with the agent and the source behind it.</p>}
+          : <p className="at-heading-description">One conversation across every agent you run, with the receipt behind every action.</p>}
       </div></header>
       <div className="at-worker-context">
         <span className="at-mode"><span className="at-dot" />{target.availability === "unavailable" ? `${target.agentName} unavailable` : `Talking with ${target.agentName}`}</span>
-        <span className="at-context-caption">{currentRequest ? `Question ${currentRequest.revision}` : "One focused conversation"}</span>
+        {currentRequest && <span className="at-context-caption">Question {currentRequest.revision}</span>}
       </div>
       <nav className="at-tabs" aria-label="Workspace view">
         <button className="at-tab" aria-pressed={view === "work"} onClick={() => setView("work")}><Icon name="work" size={15} /> Current work</button>
@@ -138,7 +138,7 @@ export function AgentTalkieWorkspace() {
           </li>)}</ol>}
         </> : <>
           {target.availability === "unavailable" && <div className="at-state"><Icon name="alert" /><div><p><strong>{target.agentName} is unavailable</strong></p><p>{target.unavailableReason ?? "This worker cannot be reached right now."}</p></div></div>}
-          {!currentRequest ? <div className="at-intro"><h2>What should we look into?</h2><p>Ask about this agent's work. Review the answer with its source, then narrow the question as you go.</p>
+          {!currentRequest ? <div className="at-intro"><h2>Start here</h2><p>Ask about this agent's work, then narrow the question as you go. Corrections keep the earlier answer in history.</p>
             <button className="at-prompt" disabled={!available || submitting} onClick={() => void workspace.sendQuestion(agenttalkieFixtureRequest.question)}><span>{agenttalkieFixtureRequest.question}</span><Icon name="arrow" /></button>
             <button className="at-prompt" disabled={!available || submitting} onClick={() => void workspace.sendQuestion("Which part of the voice connection still needs verification?")}><span>What still needs verification?</span><Icon name="arrow" /></button>
           </div> : <>
