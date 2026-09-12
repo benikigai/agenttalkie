@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-12T20:56:04Z",
+  "updatedAt": "2026-09-12T21:20:55.951Z",
   "mode": "fixture",
-  "baseCommit": "a2da32627c0a23cc17fca61401b25d80ea4cffad",
+  "baseCommit": "2f84c9ce3b6a2723bdd395b2a29f88a13bd001c0",
   "uncommitted": true,
   "checks": {
     "webTypecheck": "passed",
@@ -13,8 +13,7 @@
       "automatic transcript-to-request assembly",
       "live-mode entry and provider entitlement",
       "provider cleanup after cancelled session creation",
-      "AgentTalkie CopilotKit runtime: /api/copilotkit/info returns typed 500 because OPENAI_API_KEY is unavailable; Backend prompt/provider boundary pending",
-      "Production client-fixture end-to-end verification after the serverless repair"
+      "AgentTalkie CopilotKit runtime: /api/copilotkit/info returns typed 500 because OPENAI_API_KEY is unavailable; Backend prompt/provider boundary pending"
     ],
     "priorBrowserBaseline": [
       "shared Next runtime at http://127.0.0.1:3100",
@@ -45,13 +44,28 @@
     "audioMeterTests": 2,
     "copilotBridgeTests": 2,
     "clientFixtureTests": 2,
-    "allWebTests": 162,
+    "allWebTests": 165,
     "publicFixtureBoundary": [
       "Exact configured HTTPS origins receive an explicit client_fixture bootstrap capability",
       "Fixture session, correction, idempotency, unavailable worker, prepared follow-up, and end state remain inside the browser tab",
       "Public server session mutations are rejected and cannot reach a worker adapter",
       "Public live session creation and provider voice remain blocked"
     ],
+    "production": [
+      "Vercel deployment dpl_69hqKXzGktXeUaQ5wnWqQ7k1AzrY built commit 97d07e50d5a53c0f3010a6b5ea90771d2c8689c5 and reached Ready",
+      "Stable alias https://agenttalkie.vercel.app completed question, correction, history, prepared-not-sent follow-up, and End in Chrome",
+      "Exact custom-domain TLS and API routing verified for https://agenttalkie.app and https://www.agenttalkie.app against 76.76.21.21",
+      "Public live session and voice calls reject with 403; public fixture server mutations reject with 409"
+    ],
+    "activity": [
+      "AT-activity-0.1 schema orders deterministic events, deduplicates identical replay IDs, and rejects conflicting IDs",
+      "Public Activity shows Exa completed, Ori interrupted, and the Ambiguous historical create/readback as separate receipts",
+      "Ambiguous public projection contains generic one-create and one-readback counts with no provider reference or link",
+      "Exa receipt shows three allowlisted source links, 10 results, 2494 output tokens, and $0.007",
+      "Desktop browser rendered three ordered receipt rows without horizontal overflow"
+    ],
+    "activityContractTests": 3,
+    "providerReceiptTests": 5,
     "copilotBridge": [
       "Root route mounts inside the installed CopilotKit v2 provider",
       "Bounded serializable context includes exact selected target, session, current request/revision, attributed result/evidence summary, and prepared-not-sent state",
@@ -61,7 +75,7 @@
     ]
   },
   "sourceSha256": {
-    "apps/web/src/app/agenttalkie.css": "23252e70083a246acf0f64371c74ed67f5aae889d4368df174e53278d4daa9c5",
+    "apps/web/src/app/agenttalkie.css": "e2e539012b0979f8fb19569b5ca5033cba2cb509885864e12dad2703d34eaf1a",
     "apps/web/src/app/layout.tsx": "3ec43d9a86f4b4c95f870f44cf5498a63548eb153fb084d32b2acbfbbf372ba5",
     "apps/web/src/app/page.tsx": "1e47c9be1239aff7723cbbf5f2d305ae47cb05b08ad6704daee5ba3db8f9ee73",
     "apps/web/src/components/agenttalkie/icons.tsx": "888946195b7d4d364c48ca63356811b0b2cfb5ca82b07c60fb20c62925c0d1c0",
@@ -69,7 +83,7 @@
     "apps/web/src/components/agenttalkie/copilot-bridge.tsx": "4a26a259253fbcdaa910a152a4354f38b179daae15141c4d9b7ef4d4a128efd1",
     "apps/web/src/components/agenttalkie/shell.tsx": "12ba9e0d61ebff3e7ee6ffcd5e7e36fc90eea16aa25f60c9fd18532d83c3351e",
     "apps/web/src/components/agenttalkie/voice-dock.tsx": "e3429de716dc77b5f7b2b6842ecc6500f84fe53f598747db9cfb1dd84be6ff64",
-    "apps/web/src/components/agenttalkie/workspace.tsx": "5af036c53820709807714dd9a994c93e6e8d1885d1323c75deb82dae6bfdd2f4",
+    "apps/web/src/components/agenttalkie/workspace.tsx": "d0ba32b52355c1c580521e57dad18d58d6feb3e1b2b2f2b4e5211371c4445e71",
     "apps/web/src/components/agenttalkie-state.test.ts": "e59a8891193411d4630cca34fdf529f6b54546bce2f4d1d6dc7f2f5bd81d3dd8",
     "apps/web/src/components/providers.tsx": "b6918152aa7854ded1dd2363da48ed51a05a8f42ef23837d1428b99547177fb2",
     "apps/web/src/lib/agenttalkie-copilot.ts": "8986b5a51a8b9b62be4414a732aae8b61f664f06ee15addd983242bbf5ba1b75",
@@ -89,6 +103,15 @@
     "apps/web/src/lib/voice/live-controller.ts": "74c37081c33dc249f98e36966f723d65a775fa2b92bac9edd8eec6e671000da2",
     "apps/web/src/components/agenttalkie/sound-bar.tsx": "0ef583e6b9f29cbcf178569b5894a9b1001ef974a8aa78e104c6a8d7ba30b66e",
     "apps/web/src/lib/voice/audio-meter.ts": "0cc3b2fbe6427b92a321e6b1652e443a146c80c7a0f216533fb6a772d3f481fd",
-    "apps/web/src/lib/voice/audio-meter.test.ts": "960f16400ae3231b85964f87b189fda1faad1a2772e831aa0bebecc91435b149"
+    "apps/web/src/lib/voice/audio-meter.test.ts": "960f16400ae3231b85964f87b189fda1faad1a2772e831aa0bebecc91435b149",
+    "apps/web/src/lib/agenttalkie-activity.ts": "ae26e76a064bfe68275b67ff3e3023b6b6c38915e6077d878b2b232c5958d79b",
+    "apps/web/src/lib/agenttalkie-activity.test.ts": "4c4f1a1f29b3eafb7b9021865cd15d4ca3f21bb978dd8d8988b0b37c4fc865bb",
+    "apps/web/src/lib/server/agenttalkie-activity.ts": "3271f01fa6fdac64ae44c4db3c941a8c75ea5e56568ef4102844c94bf82ca9a7",
+    "apps/web/src/app/api/agenttalkie/activity/route.ts": "d92175eca35543052b72a96acc7e6dd10461f504037809a2095160aca0b3b714",
+    "apps/web/src/components/agenttalkie/activity.tsx": "a34b1aa67c9b90666274ea435ec49c91b6113fd4677aabb8aff1162cd408d104",
+    "apps/web/src/lib/server/agenttalkie-adapters/provider-receipts.ts": "c9f9077d7fc9bcf04143f080cf24242a1529afc5e9be0cb6a1fed4f62eac97f5",
+    "apps/web/src/lib/server/agenttalkie-adapters/provider-receipts.test.ts": "9639c38769e0b865bef78d573de947bf0629fcb2ed65302b210fcce46c43c877",
+    "apps/web/src/lib/server/agenttalkie-adapters/activity-proof.json": "ed10a8c2e93522f1618fac375ea1401a294c5f1c444b8a43f2d62f64f7731db9",
+    "apps/web/src/lib/server/agenttalkie-adapters/index.ts": "1a69cd69b1a1369334f630742e894fb71ad3b40b28cc388d30366beabb5d539e"
   }
 }
