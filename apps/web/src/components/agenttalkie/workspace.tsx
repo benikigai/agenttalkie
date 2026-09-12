@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { WorkerResult } from "@/lib/agenttalkie-contract";
 import { agenttalkieFixtureRequest } from "@/lib/agenttalkie-fixture";
 import { safeSourceUrl, sameTarget } from "@/lib/client/agenttalkie-state";
@@ -66,11 +66,7 @@ export function AgentTalkieWorkspace() {
   const { snapshot, target, ready, loading, answer, currentRequest, followup, submitting, preparing } = workspace;
   const [view, setView] = useState<"work" | "history">("work");
   const [activityOpen, setActivityOpen] = useState(false);
-  const [clearOpen, setClearOpen] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  useEffect(() => {
-    if (currentRequest?.state === "pending") setView("work");
-  }, [currentRequest?.requestId, currentRequest?.revision, currentRequest?.state]);
   const copied = !!followup && copiedKey === `${followup.requestId}:${followup.revision}`;
   const history = snapshot.session.requests.filter((request) => sameTarget(request, target));
   const finding = splitFinding(answer?.answer ?? "");
@@ -83,12 +79,6 @@ export function AgentTalkieWorkspace() {
       setCopiedKey(`${followup.requestId}:${followup.revision}`);
     } catch { setCopiedKey(null); }
   };
-
-  if(snapshot.session.mode!=="live")return <main className="at-main" id="main-content">
-    <header className="at-heading"><div><h1>{loading?"Opening your workspace":"Connect your real workspace"}</h1>
-      <p className="at-heading-description">Unlock the live demo to talk, read Ambiguous tasks, research with Exa, and create documents. Tool actions and their receipts appear here.</p>
-    </div></header>
-  </main>;
 
   return <div className="at-grid">
     <aside className="at-rail" aria-label="Projects">
@@ -116,7 +106,6 @@ export function AgentTalkieWorkspace() {
           </button>)}
       </div>
       <ToolsStatus />
-      <div className="at-rail-note"><p>Work stays in focus.<br />The conversation stays with you.</p></div>
     </aside>
 
     <main className="at-main" id="main-content">
@@ -125,26 +114,17 @@ export function AgentTalkieWorkspace() {
         <h1>{answer ? finding.headline : "What needs you right now?"}</h1>
         {answer
           ? <ProvenanceStrip result={answer} agentName={target.agentName} />
-          : <p className="at-heading-description">Ask your agents what changed, what is blocked, and what needs your decision. Every answer arrives with the agent and the source behind it.</p>}
+          : <p className="at-heading-description">One conversation across every agent you run, with the receipt behind every action.</p>}
       </div></header>
       <div className="at-worker-context">
         <span className="at-mode"><span className="at-dot" />{target.availability === "unavailable" ? `${target.agentName} unavailable` : `Talking with ${target.agentName}`}</span>
-        <span className="at-context-caption">{currentRequest ? `Question ${currentRequest.revision}` : "One focused conversation"}</span>
+        {currentRequest && <span className="at-context-caption">Question {currentRequest.revision}</span>}
       </div>
       <nav className="at-tabs" aria-label="Workspace view">
         <button className="at-tab" aria-pressed={view === "work"} onClick={() => setView("work")}><Icon name="work" size={15} /> Current work</button>
         <button className="at-tab" aria-pressed={view === "history"} onClick={() => setView("history")}><Icon name="history" size={15} /> Conversation history <span className="at-tab-count">{history.length}</span></button>
         <button className="at-tab" aria-expanded={activityOpen} aria-controls="at-activity-panel" onClick={() => setActivityOpen(true)}><Icon name="source" size={15} /> Activity</button>
       </nav>
-      <div className="at-actions" style={{marginBottom:16}}>
-        <a className="at-button" href="https://app.ambiguous.ai/docs" target="_blank" rel="noopener noreferrer">Open Ambiguous <Icon name="arrow" size={14} /></a>
-        <button className="at-button" disabled={loading} onClick={() => {setView("work");setActivityOpen(false);void workspace.reset();}}>New conversation</button>
-        <button className="at-button" disabled={loading || history.length===0} onClick={() => setClearOpen(true)}>Clear conversation history</button>
-      </div>
-      {clearOpen && <div className="at-notice" role="alertdialog" aria-label="Clear conversation history">
-        <p>Remove this conversation's questions and answers from AgentTalkie and start fresh? Saved Ambiguous records and provider receipts stay intact.</p>
-        <div className="at-actions"><button className="at-button" onClick={()=>setClearOpen(false)}>Cancel</button><button className="at-button" onClick={()=>{setClearOpen(false);setView("work");setActivityOpen(false);void workspace.reset(true);}}>Clear and start new</button></div>
-      </div>}
       <LiveEvidence onInspect={() => setActivityOpen(true)} />
       <section className="at-stage" aria-label={view === "work" ? "Current work" : "Conversation history"}>
         {workspace.error && <div className="at-notice at-notice-alert" role="alert">{workspace.error}{workspace.retry && <button className="at-button" style={{ marginLeft: 12 }} onClick={() => void workspace.retry?.()} disabled={submitting}>Retry same request</button>}{!ready && !loading && <button className="at-button" style={{ marginLeft: 12 }} onClick={() => void workspace.start()}>Reconnect workspace</button>}</div>}
@@ -158,16 +138,16 @@ export function AgentTalkieWorkspace() {
           </li>)}</ol>}
         </> : <>
           {target.availability === "unavailable" && <div className="at-state"><Icon name="alert" /><div><p><strong>{target.agentName} is unavailable</strong></p><p>{target.unavailableReason ?? "This worker cannot be reached right now."}</p></div></div>}
-          {!currentRequest ? <div className="at-intro"><h2>What should we look into?</h2><p>Ask about this agent's work. Review the answer with its source, then narrow the question as you go.</p>
-            <button className="at-prompt" disabled={!available || submitting} onClick={() => void workspace.sendQuestion(snapshot.session.mode==="live"?"Show my actual Ambiguous tasks":agenttalkieFixtureRequest.question)}><span>{snapshot.session.mode==="live"?"Show my Ambiguous tasks":agenttalkieFixtureRequest.question}</span><Icon name="arrow" /></button>
-            <button className="at-prompt" disabled={!available || submitting} onClick={() => void workspace.sendQuestion(snapshot.session.mode==="live"?"Draft a job description for our virtual executive assistant":"Which part of the voice connection still needs verification?")}><span>{snapshot.session.mode==="live"?"Draft a document in Ambiguous":"What still needs verification?"}</span><Icon name="arrow" /></button>
+          {!currentRequest ? <div className="at-intro"><h2>Start here</h2><p>Ask about this agent's work, then narrow the question as you go. Corrections keep the earlier answer in history.</p>
+            <button className="at-prompt" disabled={!available || submitting} onClick={() => void workspace.sendQuestion(agenttalkieFixtureRequest.question)}><span>{agenttalkieFixtureRequest.question}</span><Icon name="arrow" /></button>
+            <button className="at-prompt" disabled={!available || submitting} onClick={() => void workspace.sendQuestion("Which part of the voice connection still needs verification?")}><span>What still needs verification?</span><Icon name="arrow" /></button>
           </div> : <>
             <div className="at-request"><span className="at-person">You</span><div><small>YOUR QUESTION · REVISION {currentRequest.revision}</small><p>{currentRequest.question}</p></div></div>
             {currentRequest.state === "pending" && <div className="at-state at-state-working" role="status"><div><p>{submitting ? "Submitting your question" : "Working on your question"}<span className="at-working-dots" /></p><p>You can correct the question while this request is pending.</p></div></div>}
             {(currentRequest.state === "failed" || currentRequest.state === "unavailable") && <div className="at-state" role="status"><Icon name="alert" /><div><p>{currentRequest.state === "unavailable" ? "The agent is unavailable." : "The request did not complete."}</p><p>{currentRequest.error?.message ?? "No answer was returned."}</p></div></div>}
             {answer && <article className="at-response"><div className="at-response-header"><span className="at-agent-monogram" style={{ width: 28, height: 28, fontSize: 16 }}>{target.agentName.slice(0, 1)}</span><strong>{target.agentName}</strong><span className="at-result-caption">Finding received</span></div>
               <p className="at-answer">{finding.body || answer.answer}</p><EvidenceDetails result={answer} />
-              <div className="at-actions">{answer.evidence.some(e=>e.kind==="checkpoint"&&e.reference.startsWith("AgentTalkie document draft ")) && <button className="at-button at-button-primary" disabled={!available || submitting} onClick={()=>void workspace.sendQuestion("save this document")}>Save this document to Ambiguous</button>}<button className="at-button" disabled={!available || submitting || preparing} onClick={() => { setCopiedKey(null); void workspace.prepare(); }}>{preparing ? "Preparing…" : "Prepare follow-up"}<Icon name="arrow" size={14} /></button><button className="at-button" onClick={() => setView("history")}>View history</button></div>
+              <div className="at-actions"><button className="at-button at-button-primary" disabled={!available || submitting || preparing} onClick={() => { setCopiedKey(null); void workspace.prepare(); }}>{preparing ? "Preparing…" : "Prepare follow-up"}<Icon name="arrow" size={14} /></button><button className="at-button" onClick={() => setView("history")}>View history</button></div>
             </article>}
             {followup && <section className="at-followup" aria-label="Prepared follow-up"><p className="at-eyebrow">Prepared · Not sent</p><h3>A next step for {followup.recipient}</h3>
               <dl className="at-facts"><div><dt>Recipient session</dt><dd><code>{followup.workerSessionId}</code></dd></div><div><dt>Question revision</dt><dd>{followup.revision}</dd></div></dl><p>{followup.scope}</p>
