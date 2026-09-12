@@ -1,0 +1,4 @@
+export const voiceMarkPath="M18 6h28a12 12 0 0 1 12 12v20a12 12 0 0 1-10 11.83V56a2 2 0 0 1-3.14 1.64L34 50H18A12 12 0 0 1 6 38V18A12 12 0 0 1 18 6Zm2 16a3 3 0 0 0-3 3v10a3 3 0 0 0 6 0V25a3 3 0 0 0-3-3Zm12-7a3 3 0 0 0-3 3v24a3 3 0 0 0 6 0V18a3 3 0 0 0-3-3Zm12 7a3 3 0 0 0-3 3v10a3 3 0 0 0 6 0V25a3 3 0 0 0-3-3Z";
+export function AgentTalkieBrand(){
+ return <div className="at-brand"><svg className="at-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d={voiceMarkPath} fill="currentColor" fillRule="evenodd"/></svg><span>AgentTalkie</span></div>;
+}
