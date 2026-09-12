@@ -125,7 +125,17 @@ ${prepared.draft.content}`;
    // A journaled runner claim is required. Never substitute a completion call for a coding harness.
    const runner=await sql()`SELECT id FROM agenttalkie_runners WHERE heartbeat > now()-interval '45 seconds' LIMIT 1`;
    if(!runner.length)throw new AgentTalkieError(503,"RUNNER_OFFLINE","The coding runner is offline. No Codex or Claude job was launched.");
-   await sql()`INSERT INTO agenttalkie_jobs(id,owner,thread_id,request,kind,state) VALUES(${request.requestId+":"+request.revision},${owner},${sessionId},${JSON.stringify(request)}::jsonb,${selected.action},'queued') ON CONFLICT DO NOTHING`;
+   const {session}=await load(owner,sessionId);
+   const index=session.requests.findIndex(r=>r.requestId===request.requestId&&r.revision===request.revision);
+   const previous=session.requests[index-1];
+   let context:Record<string,unknown>={};
+   if(selected.action==="review"){
+    if(!previous?.result?.evidence.some(e=>e.kind==="worker_reply"))throw new AgentTalkieError(409,"REVIEW_ARTIFACT_REQUIRED","First obtain a Codex investigation result. Claude reviews that exact artifact.");
+    const source=await sql()`SELECT id,result FROM agenttalkie_jobs WHERE id=${previous.requestId+":"+previous.revision} AND owner=${owner} AND thread_id=${sessionId} AND state='completed' AND kind='investigate'`;
+    if(!source[0]?.result)throw new AgentTalkieError(409,"REVIEW_ARTIFACT_REQUIRED","No matching Codex artifact is available for review.");
+    context={parentJobId:source[0].id,artifactHash:source[0].result.artifactHash,artifact:source[0].result.answer,repositoryRevision:source[0].result.repositoryRevision};
+   }else if(previous?.result){context={previousResult:previous.result.answer};}
+   await sql()`INSERT INTO agenttalkie_jobs(id,owner,thread_id,request,kind,state,context) VALUES(${request.requestId+":"+request.revision},${owner},${sessionId},${JSON.stringify(request)}::jsonb,${selected.action},'queued',${JSON.stringify(context)}::jsonb) ON CONFLICT DO NOTHING`;
    await recordEvent(owner,sessionId,request,"ori",selected.action==="investigate"?"Codex investigation queued":"Claude review queued","pending");
    return;
   } else {
