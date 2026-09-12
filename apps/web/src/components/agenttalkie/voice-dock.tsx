@@ -106,6 +106,13 @@ export function VoiceDock() {
   const activeRequest = workspace.currentRequest;
   const requestPending = workspace.submitting || activeRequest?.state === "pending";
   const voiceState = workspace.loading ? "Opening workspace" : voice.error || activeRequest?.state === "failed" || activeRequest?.state === "unavailable" ? "Needs attention" : sessionEnded ? "Conversation ended" : activity.output ? "Speaking" : activity.input ? "Listening" : muted ? "Muted" : requestPending ? "Working" : connecting ? "Connecting" : localStream ? "Mic ready" : workspace.answer ? "Answer ready" : "Ready";
+  // The dot used the raw transport status while the label said something else,
+  // so "Needs attention" showed a healthy green. Colour it by what it says.
+  const voiceTone = voiceState === "Needs attention" ? "error"
+    : voiceState === "Speaking" || voiceState === "Listening" ? "active"
+    : voiceState === "Working" || voiceState === "Connecting" || voiceState === "Opening workspace" ? "connecting"
+    : voiceState === "Conversation ended" || voiceState === "Muted" ? "ended"
+    : localStream ? "local-test" : "connected";
   const statusDetail = localStream ? "Local mic only" : requestPending ? "Waiting for agent" : activeRequest?.state === "failed" ? "Request failed" : activeRequest?.state === "unavailable" ? "Agent unavailable" : workspace.snapshot.session.mode === "fixture" ? "Fixture workspace" : connected ? "Live voice" : "Voice available";
 
   const talk = async () => {
@@ -189,7 +196,7 @@ export function VoiceDock() {
       <div className="at-voice-row">
         <div className="at-voice-summary">
           <strong>{workspace.target.agentName}</strong>
-          <span className="at-voice-state" role="status" aria-live="polite" data-voice-status={localStream ? "local-test" : voice.status}><span className="at-voice-dot" />{voiceState}</span>
+          <span className="at-voice-state" role="status" aria-live="polite" data-voice-status={voiceTone}><span className="at-voice-dot" />{voiceState}</span>
           <small>{statusDetail}</small>
         </div>
         <SoundBar sources={meterSources} muted={muted} local={!!localStream} onActivity={updateActivity} />
