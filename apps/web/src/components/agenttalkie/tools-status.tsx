@@ -25,7 +25,7 @@ export function ToolsStatus() {
 
   useEffect(() => {
     const controller = new AbortController();
-    const refresh=()=>fetch("/api/agenttalkie/live/health", { signal: controller.signal, headers: { Accept: "application/json" } })
+    fetch("/api/agenttalkie/live/health", { signal: controller.signal, headers: { Accept: "application/json" } })
       .then(async (response) => {
         if (response.status === 401) return setLocked(true);
         if (!response.ok) return;
@@ -33,9 +33,7 @@ export function ToolsStatus() {
         if (body && typeof body === "object") setHealth(body as Health);
       })
       .catch(() => undefined);
-    void refresh();
-    const timer=setInterval(()=>void refresh(),15000);
-    return () => {controller.abort();clearInterval(timer);};
+    return () => controller.abort();
   }, []);
 
   if (!health && !locked) return null;
@@ -46,10 +44,13 @@ export function ToolsStatus() {
       {TOOLS.map((tool) => {
         const state = locked ? "locked" : health?.[tool.key] ?? "unconfigured";
         const ready = READY.has(state);
-        return <li className="at-tools-item" key={tool.key} title={`${tool.provider}: ${state}`}>
+        // A grey dot is not information. Say what an unavailable tool is doing,
+        // so nobody asks the agent for something it cannot reach.
+        const note = ready ? null : state === "locked" ? "Locked" : state === "offline" ? "Not connected" : "Not configured";
+        return <li className={`at-tools-item${ready ? "" : " at-tools-item-off"}`} key={tool.key} title={`${tool.provider}: ${state}`}>
           <span className={`at-tools-dot ${ready ? "at-tools-on" : state === "locked" ? "at-tools-locked" : "at-tools-off"}`} aria-hidden="true" />
           <span className="at-tools-name">{tool.name}</span>
-          <span className="at-tools-provider">{tool.provider}</span>
+          <span className="at-tools-provider">{tool.provider}{note && <span className="at-tools-note">{note}</span>}</span>
         </li>;
       })}
     </ul>
