@@ -1,0 +1,743 @@
+{
+  "capturedAt": "2026-09-12T19:37:01.999819+00:00",
+  "source": "https://github.com/CopilotKit/agents-everywhere-starter-kit",
+  "sourceCommit": "86f547d74e8bd32e047226b0e1fb862cca02a5c7",
+  "note": "Filesystem capture before Backend product implementation. Existing live/page.tsx differs from official reference and is preserved; authorship is unverified. Backend added secret exclusions to .gitignore before this capture. Parent Hackathon SHA is not a product baseline.",
+  "files": [
+    {
+      "path": ".env.example",
+      "sha256": "2d14a110633932ea45320e21c7ed39b8a9b077a2d8fa6710297c0c0a140a410c",
+      "matches_reference": true
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "8a0de9afe2d809c131f6179a564b3d9361abda197126e2b43a11e0dc29101353",
+      "matches_reference": false
+    },
+    {
+      "path": ".mcp.json",
+      "sha256": "d5fd199f9c539626f503d9d9d27c9b218c27200d621084704e1052b6b9673cd6",
+      "matches_reference": true
+    },
+    {
+      "path": ".nvmrc",
+      "sha256": "f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56",
+      "matches_reference": true
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "705680f2ceef44c5da2ed56e87361fae3043d9a1c820339adc6353b855da2a63",
+      "matches_reference": true
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "6d35a6bb107ae508da34636387f6208e75a6938e797bc0d5bfa9489d2ca95bad",
+      "matches_reference": true
+    },
+    {
+      "path": "README.md",
+      "sha256": "b2f167f3b4c507c22b77e3914fa5f5acb3c2385c9b9c402811de684af18f0074",
+      "matches_reference": true
+    },
+    {
+      "path": "SUBMISSION.md",
+      "sha256": "1c3fa5dff2fcfb66192be2aa002e1bd174ea34586eeb93c0f9428057bd66ed3c",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/README.md",
+      "sha256": "522806536884548b32fb71eeb499e0114ac1ad02813676d790942e279af5286b",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/package.json",
+      "sha256": "52c3bdbabd3fe637e139e790fdf932b28ad26e04ee9b841aca7590949d16659b",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/agent-factory.test.tsx",
+      "sha256": "812cc50cb1dc49b28bca2c570ebe01f2cd451b82d35df9528aec89cb2f823ed0",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/agent.ts",
+      "sha256": "969201bfd918011ed1c5151bcb31511e77f97e1e5f6eb63e9d84b17b1d4e3a2f",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/channel.tsx",
+      "sha256": "d7dc66ccaa9fef6dd87be27d98560b95de9973c008a7654450bac67011b54a95",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/components.test.tsx",
+      "sha256": "1f2c0956f956c535595fd2bb4bc00b19d7acc8d077810bac6617ae5d682d6540",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/components.tsx",
+      "sha256": "cd7aad069c0d67fcba6e0d8126c5b8dfabdb3877ceefbcb2f789f44be31f02d5",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/delivery.test.tsx",
+      "sha256": "2bf40ed860077e07cf1f672198790df4c5f270f2d8ee3804fca6c8fefbe94bbc",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/env.ts",
+      "sha256": "8a24b987c91f05f7fc1d2f97fb9806b25451acba6723e9485ed194a1a57b1659",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/search.test.tsx",
+      "sha256": "2d3255aba9670b422fc7f3c3380b0597fa85f05256a636425c4e119f4170e73a",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/search.tsx",
+      "sha256": "a972e1e0cd86f3b4c5c9ccf82ea8de78ebe725226f4127bc5c3776fe608517b7",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/server.ts",
+      "sha256": "d2c11d82ca464e04178a32c0e504e4e0e0a47bae9bf6567b6cd436e55866781e",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/testing/managed-gateway.ts",
+      "sha256": "18e03eaec367adf577c68f0fb4384b47d8121b7a2216dc0ad0d2c2a3489e8c8e",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/tools.test.tsx",
+      "sha256": "79522017c6b034b00770aa8641ae6fdf0904c3172d83c2db3c7e5d5daa7f15b2",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/src/tools.tsx",
+      "sha256": "1e7a5f76b7e0d3b01c6d84e3a2f5fd49c00a91aba0972fa1f93a19d631713a4a",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/channel/tsconfig.json",
+      "sha256": "6756e7d9e9b5083748fe41b3126fa4026311158fbdb7f73a6c3e0b0ea4f9900e",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/.env.example",
+      "sha256": "0ba6d17dc37813ac63a262b23db4056941344867cea38e6607bdb27a64c7a898",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/App.tsx",
+      "sha256": "c2650886b6c60d623a9cc776769dbda0fcb78f74b383190762149cc6919d65ac",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/README.md",
+      "sha256": "6ebc9fb14c4c5fb40c247c8d109cb356dfd4a1cb5e8a598cbd57350d379518a5",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/app.json",
+      "sha256": "87c863b4f6de8b5e9a1e89b06d2e1a76a920c235cc6631be59c7cc970dee095d",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/index.js",
+      "sha256": "65289cd1e97ec7b1b82f2e8b301b08d5623acaceb07b20f1e9fed1c7ce4f4b2d",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/metro.config.js",
+      "sha256": "5689c61f1468cb32ef57f98e4fa2b67ed056035a734d97f632cdba560a6d061c",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/package-lock.json",
+      "sha256": "8536fa61c0a15d4b0d0ab28ead016f1968033cb25a7a4b7768dc86adfc1f8680",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/package.json",
+      "sha256": "75c21750a68f0be712240d3a2ae1f897503598c9da19ed0b317551f6e63585fa",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/src/assistant-links.ts",
+      "sha256": "058e4db16e7f974982a8fc5f871d84e28d629a4c5cc606e95eb64d9d09d183d3",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/src/assistant-markdown.tsx",
+      "sha256": "bc2fc8b227d529be7e4fbf18ad0d4e94f4137a4d83cf5648a42bd1d527f5edf0",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/src/chat.tsx",
+      "sha256": "cbb9d5f4960e7cd9e9b68ff91ca605668f354fd184f23b0187162020f997470f",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/src/config.ts",
+      "sha256": "50e4950063dc63dc09671f8bf2fb5e140a52f89d6aacf5929c8ec518f54e4932",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/src/finance.ts",
+      "sha256": "6f49613e845073255a5677826ebeaf44a97ecfc7d5b9fda32cec42fe3ef0b4f2",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/src/message-id.ts",
+      "sha256": "e357f1d2486fae55e31470a1db0eb1c79bb726e18054ce347ef5534419bbd452",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/src/styles.ts",
+      "sha256": "2456bb21c0117f120d7a56507550274a890e487afb38ddd8274e86a6fe36777b",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/src/tools.tsx",
+      "sha256": "18c589ebe659dd3d1f2248cae312666112e654755abd81e7814f739fc11ee057",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/test/assistant-markdown.test.ts",
+      "sha256": "90f2dcd75f5affe46910cd4e2f07c7e9816307d9d4b866e48a248ad47c3ad204",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/test/currency.test.ts",
+      "sha256": "9225eed961050b7224404c3573fa55da584fe402dabac952a393da8205716661",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/test/finance.test.ts",
+      "sha256": "f8cf9e297255e18209e4df4093401f9af77187abf122c9058e69e29e762406f4",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/test/message-id.test.ts",
+      "sha256": "0c5ff7e2b65e937c2f15c2fe221497e92c529e93acbe3674f2ae589c9cd1da6f",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/test/spending-summary.test.ts",
+      "sha256": "7c67a35b8ec19994241d44a24ccc062a384e645ffff02e42ae4c30b514ab296c",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/mobile/tsconfig.json",
+      "sha256": "ce46392b3075dcd22d904fcc7e34fac7f61a299eb096e313817ce8a54678a63d",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/README.md",
+      "sha256": "ac064a3930ef341f03374162b72f0b18d0a5d4d62f91e848f22ba0a2b8743ad7",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/next.config.ts",
+      "sha256": "9f267695400254ceeebe2ae55d1026c1f388b0abf94fccbe9007cfea8f1f5a71",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/package.json",
+      "sha256": "08699f0ccb17bd7a519de0357335a96785266e87bdb2b011cb987095fabe4221",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/scripts/check-workplace.ts",
+      "sha256": "c98e3d5b2e48f2a42914b72c49b86f33aaef04c434965bda80f38fed4b8ee6dc",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/app/api/copilotkit/[[...path]]/route.ts",
+      "sha256": "e8c7e4bf2c8818d78d80e8ba6193728aff5e5bebab7848dfc8e9c6f102fb93a6",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/app/api/followups/route.ts",
+      "sha256": "7bdc9372b55d68d09551f996dca2817998729d2e6054456984e8ad71998b1f11",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/app/api/mobile-copilotkit/[[...path]]/route.ts",
+      "sha256": "aa36a9b6a209363f5df6f836fee64c8d28bac36953b4244f9fb8275842a057a7",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/app/api/realtime-token/route.ts",
+      "sha256": "72b3e93d11aba25c2d884400375ac8ff6a8e5eacac97d2bbd5fd6ec6de9b2df6",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/app/api/search/route.ts",
+      "sha256": "5deca656ad388634ae6a6ffe3d211b1ef28b8b5189339e20495367919d8b8089",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/app/globals.css",
+      "sha256": "86ac97a2f8adc6f7571e13e69f535ca776ca359b94f9b3f01a8690c2cba887f2",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/app/layout.tsx",
+      "sha256": "f06161e6bafc1fac47cae27268d6bd6872c4faf50aabfe59835d93f94c6c9d50",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/app/live/page.tsx",
+      "sha256": "10019957ce928f7d88ff877e6bb625d0614e04950c674dde4c9e0b77e704e8e4",
+      "matches_reference": false
+    },
+    {
+      "path": "apps/web/src/app/page.tsx",
+      "sha256": "779b0a7b5164f4dd02596a90c01bd822e8b62a14607cc3ab08d1c204fd236923",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/app/voice/page.tsx",
+      "sha256": "1799204b9ce6674d8ad892889d623a2f812ed065365d8a14cb713240f20b6427",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/components/app-control.tsx",
+      "sha256": "d55e0383fee4abecb21f13080c7debb68928f473ec0b160fcdea237751c3b8aa",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/components/generative-ui.tsx",
+      "sha256": "e61795c9328fdb53c24036fbb3436cbd4ef867e831ded8f26c8803be22037d1b",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/components/providers.tsx",
+      "sha256": "b6918152aa7854ded1dd2363da48ed51a05a8f42ef23837d1428b99547177fb2",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/components/streamed-cards.test.ts",
+      "sha256": "f9b9b698bfbac032d31f483e6be356c98ae4e363a9a2ee36c67451e839ec388a",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/components/streamed-cards.tsx",
+      "sha256": "8e573aa45933d1ce1727048f929fd758bed9385a06d53cf7c054dc2e51039597",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/components/workplace-followups.tsx",
+      "sha256": "a31c5577a7b96561e3c37eaed7d8128a781f9183df60f37882b4bf964f954035",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/followup-client.test.ts",
+      "sha256": "55c7162143f053d1a9ca31cfce71d608baabb86ba3e51993cc406797b09b4671",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/followup-client.ts",
+      "sha256": "bc42254d1e5245c468c83f6188832fc7754be189a67f06903027fc4a87e344b2",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/followup-types.ts",
+      "sha256": "cc4d01b8efc30f54aa6fc62cb10002984a1d17e88411cd883bb2b539dcf75d4c",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/incidents.test.ts",
+      "sha256": "2bbaeddf8cec741fa8163ef8ae030ba04af65e2a56595650945daf586b4fee0c",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/incidents.ts",
+      "sha256": "3c294a0c4c3eb963c5257e2a78bb01bd3ea259be5d847bfdc8fade979f427346",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/realtime-config.ts",
+      "sha256": "ffcd3468858dcb139f21f3ca7e99fcf8cdd16d15bb2014e96b13823e364d9cb8",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/server/followup-error.ts",
+      "sha256": "4d2cb309bc3e714ab0dd569015e300177c6693f7d3e489c0a428b8f770665894",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/server/followup-http.test.ts",
+      "sha256": "921cf9297f4b58c8f954e849f941c7c56ff27591a98bc84a342c525200f6b135",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/server/followup-http.ts",
+      "sha256": "f92a3269ba0d4b57861e82d4beed7c5e05c3c0f1624dbb64834cb271b3a3ef14",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/server/followups.test.ts",
+      "sha256": "cdb28a4c9b235089dd983e0919f625bad74dd647a8fa4c337746ccbfe31ef606",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/server/followups.ts",
+      "sha256": "d30eb4efaf68912786628dad499ca262a744b83e5c318cf3aa02ee33221cbac2",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/server/workplace.test.ts",
+      "sha256": "ef09363c2cdaf563c6f83bedeb3fc4083923403527ec3ae1be033ac917aecbe4",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/server/workplace.ts",
+      "sha256": "f1a9ad3dea03bcaae2a66466e1a67d5f202614ac4c1d727568cacc0f2411c37e",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/src/lib/use-workplace.ts",
+      "sha256": "b818c43cadf4f881863b2c0d1563560a4d35d8e82191dc04faa99a00d5193d9f",
+      "matches_reference": true
+    },
+    {
+      "path": "apps/web/tsconfig.json",
+      "sha256": "4d9e4ba14bad9ad013a3594b33258faafbe0eb52876a64ce8b662f9cf7a6f6a3",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/banner.png",
+      "sha256": "650821dc8c7050f2e99c4e2d25ba3563f2c4347009fe84f293c535a00b993f86",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/banner.svg",
+      "sha256": "c19be6768dbbc71ea156bce94bf260753d1e404606639cb5a08ab601b87d0daf",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/copilotkit-logo-full.svg",
+      "sha256": "5362734ebeedca3806c7457b710592a03c1d37cca4a1dc3fea887e5db4757836",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/demos/mobile.gif",
+      "sha256": "f2865eeba707220d1a3486a174b86aeeb4ce24c7530c5e8fd0c32d59b5783a1e",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/demos/mobile.mp4",
+      "sha256": "e9a97b45b0fd1d491dcc2ba9363c94b73609b12f6f87f57bf153dbd09039fc79",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/demos/slack.gif",
+      "sha256": "7b25aa09e574145ab5dca3434f33966a63153c8ca56d3525f3ccbc0401d6a881",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/demos/slack.mp4",
+      "sha256": "393b73415daebc253eca041178cd85be192baf3f5611b6fd5aa5602bae563e78",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/demos/web.gif",
+      "sha256": "71394aeabe84ff49f31a0ffd0d073473e878e9613c789db3876ec893386b8d26",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/demos/web.mp4",
+      "sha256": "a5fb7a73cd32f107c8b8d2108c678f664603d586a174ab07761dacbdc51752a1",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/sponsors/ambiguous.svg",
+      "sha256": "9089c1960e16fdf1e3d794b75722c7587eb31a5d376ef45faf2ffc091a854719",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/sponsors/auth0.svg",
+      "sha256": "b924ec447a8415f54cfd83e44e017dec9bfc8150aeed87066d8d5c2d69adc8e3",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/sponsors/exa.svg",
+      "sha256": "f4756ef1561671266f4b603c9e01334f93fbf4aeea6482b7008dfe4e6ab8c8c4",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/sponsors/openai.svg",
+      "sha256": "b646d86740762f820283fdec5e3e9f5439f64c51c268c1ecfcba31f36feef57e",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/sponsors/openrouter.svg",
+      "sha256": "9040d551ebeac00981c954cefbd20c617774896a423eed25e4d43e1ec9aea44b",
+      "matches_reference": true
+    },
+    {
+      "path": "assets/verify.gif",
+      "sha256": "993cfa9d0e2ab3af0f054a4d8a82a13c238c5867cc140ab55432e71792274efd",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/README.md",
+      "sha256": "62362933bcfb35eefce549570d641fbff381cfdc93d10997876c1aed130c81e2",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/auth0/README.md",
+      "sha256": "be69d7984e44dec1a71a665a447389aa5800df021a3a685adfe92110e82198ac",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/auth0/client.mjs",
+      "sha256": "7b610afebd33cb95705a5050fbf560d4c3b5375af50c7eb990d947b090a63263",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/auth0/package-lock.json",
+      "sha256": "0ed03c5e08b61ff8653a6580f330cc1d6421979cf05f4d1f577b012c03ec3b05",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/auth0/package.json",
+      "sha256": "33e858671b806ab4a8c98e4cdd1806a0e6b9681f92f4659ecd2d43d171e5e563",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/auth0/server.mjs",
+      "sha256": "3e976472ca344cd84315dd65bdaec357f6bc9ac5f9986ce73791502eaab3c273",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/auth0/test.mjs",
+      "sha256": "202b437ad2ae217923f29caa16a076a9decbae6fcd7787cc9f801717107a2342",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/channels-sdk-walkthrough/README.md",
+      "sha256": "68dcfc81ba7188b8fba06679bf9e8fda0ebdd07f266d17474f303f0b001a3ff4",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/channels-sdk-walkthrough/images/04-create-project.png",
+      "sha256": "bcad51637ea779d16d87b893ed4aa71a68c6b3d201f82449cfdc0be82088ef73",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/channels-sdk-walkthrough/images/06-channel-name-slack.png",
+      "sha256": "2bc92eb300d8fb0391adeaec7206916c8ccac5324271e9213a5b5936af7ff5dd",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/channels-sdk-walkthrough/images/07-slack-setup-instructions.png",
+      "sha256": "4b3b033523cb735ddb5b86badfee82d96cc9a07ec3a264b1e7db11212a7d076f",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/channels-sdk-walkthrough/images/10-slack-install-consent.png",
+      "sha256": "c6ca8ece18cea974cb96252b5d55bb0d0b4128234c2dea8935abf94d5f3a6352",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/channels-sdk-walkthrough/images/14-channel-online.png",
+      "sha256": "190c0b19b5eb637ed96f62be3aef2f110e3d27e9e39ce65a066278e047a441ba",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/channels-sdk-walkthrough/images/15-live-incident-card.png",
+      "sha256": "70e118eadb049f58c6ca7be54d54a0d7d8486ed679a67cc224a1ff17df62fe9c",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/channels-sdk-walkthrough/images/16-contextual-follow-up.png",
+      "sha256": "3a83fa1331ec581239b73fd3b49e591ced19f6b2b67019e0aee1826aadafc8a0",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/channels.md",
+      "sha256": "98ecbbed65ad635a799de62a4921b212388ae6d2f9670a0b613515bf66db6fa5",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/demo-prompts.md",
+      "sha256": "db2d86af1bd995492717130f5a1d40404be6cdfbea5fbf3466c8444b4bf94782",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/deploy.md",
+      "sha256": "ebbbd8cd5acfdb34e7c128128d113e78cac29d591f7b3fac436c754018080531",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/model-switching.md",
+      "sha256": "d30e01dff07a2fe99c81637b33061ce9915b1447d3d98ee046a36dc055215eef",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/setup.md",
+      "sha256": "c0ec96cda3c8d431489b508e67bef6d5d11d7d181e8d0e35047973f294c096b9",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/sponsors.md",
+      "sha256": "2686f7d19f6a34606549cf3a680f5f33022287dfa984f93f1c41666fd5a3fd51",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/surfaces.md",
+      "sha256": "b1b84b785b2f9fb5b2d693de0b7fadd94f2713a31efb6a34b0c79aca112eb0ae",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/template-walkthroughs/mobile/README.md",
+      "sha256": "555ebfb400ef05cb855758a397c819d885a7e552caba0afc607437834c55644c",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/template-walkthroughs/mobile/images/01-start.png",
+      "sha256": "41f327b85d12025144d50513c2f6df6d0295089c79b4a72222feeaf8ff541c21",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/template-walkthroughs/mobile/images/02-account-card.png",
+      "sha256": "4433627fe117b7caf240374e3575b3a35eaeb7f7a2b64cb0e9f63df8e32cf131",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/template-walkthroughs/mobile/images/03-approve-expense.png",
+      "sha256": "d8803dfa334382a712f4bde7e30a9dbca03ae41b28646893cefea24ea3935e38",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/template-walkthroughs/mobile/images/04-expense-saved.png",
+      "sha256": "d7d9182243ccfeb626f35412bba69b08d8304528137a2aa075bc3927de29239f",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/template-walkthroughs/mobile/images/05-cancel-expense.png",
+      "sha256": "4cb45a004d0bf5c48f7da45faf3653383b7e6784b6703a963b372f7306d39f42",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/template-walkthroughs/mobile/images/06-expense-cancelled.png",
+      "sha256": "1db228d81981cc3bcf62dbe7efe0099e389acc74ffed399c401b4d92984a2f74",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/template-walkthroughs/mobile/images/07-formatted-response.png",
+      "sha256": "b62e39c52f7f0f454e541fcabe4adb91900f0b771cf25bddabc9388fab36ea71",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/template-walkthroughs/mobile/images/react-native-walkthrough.gif",
+      "sha256": "39b56ecf9d6edde73b431249fa35d145cd935b9123f0a523600bfa95829784d8",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/tools-and-context.md",
+      "sha256": "7198b817c787e7afcd24bd1814bf9976f5245118acc1a14de941e077de110cf0",
+      "matches_reference": true
+    },
+    {
+      "path": "dev-docs/troubleshooting.md",
+      "sha256": "f7b1fe7408704b07cdd1bab4f8927e4961a2cd05d0e146a4c2eff97ece745b80",
+      "matches_reference": true
+    },
+    {
+      "path": "hackathon-overview.md",
+      "sha256": "fbdb51419b76c7e3674ffa6c734c519bb87e72aca6e358610291928301057f71",
+      "matches_reference": true
+    },
+    {
+      "path": "hackathon-rules.md",
+      "sha256": "3f2fdd981b05e6982d9bcea9a78f5cb5261afe14227697ab212e3dde86dde33d",
+      "matches_reference": true
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "8a7d68d9816ba51a795897fba4941c90c7e7d965608792541439843a03bc779d",
+      "matches_reference": true
+    },
+    {
+      "path": "package.json",
+      "sha256": "d8bfcd7b8554489a99cb009d80a1f31f87a247fddce5d1e60477adb133a2cf2f",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/package.json",
+      "sha256": "8c6fa08b391cf801b485e7391c7802c986887e3f163f90daa942cae43176cb9d",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/agent.ts",
+      "sha256": "1b25bb4d7fbdb5155b5203e1a308913a058a48f755f4d3a19fa8b103e1ba5049",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/capabilities/search.ts",
+      "sha256": "860968788f041058a75e12ac8294133cad0c9c323b2505d7efdb9e2c72729d2f",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/capabilities/workplace.ts",
+      "sha256": "459ead62313930ce1bc54eeb1a320b3196c9a4cb0528262676c410731f1e0214",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/index.ts",
+      "sha256": "0a1aefd116c54a836cbe21f3c43021d5dab10b50600e3201b1871cfa9b13a7a4",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/mobile-finance-prompt.ts",
+      "sha256": "fddf254f20d07d6b6c817f5f776eb8749960b8c0ee7a77a6e3f57a1f2144405c",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/model-meta.ts",
+      "sha256": "c7f7fd2841fc598c8c2b6f7fafd41dea9fc144cb99b7e31280b957be3ce214f7",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/model.test.ts",
+      "sha256": "42b9c2faf35ffa58b4a39e15b39e20f1a4980e43a6179cc54060794611adf8b8",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/model.ts",
+      "sha256": "41892dfdaa856a898cca191f419b5e0602a3968b2576d9110f96d474f80402d0",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/prompt.ts",
+      "sha256": "749df7103ba6899384406d46d73fa00241d4c4a31429e055d362d28ba5c97d86",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/schemas.ts",
+      "sha256": "c04a83d0b547ebe007c72b89145d08e7d0443f2e3c698761fc34755cf6b00124",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/src/shared.ts",
+      "sha256": "b364d962a8cd66924c6ef2de52c54b827695458498e6790b5a2c514416ce3ffa",
+      "matches_reference": true
+    },
+    {
+      "path": "packages/agent-core/tsconfig.json",
+      "sha256": "bd831299d14dd4da0f705b7e491c43a1b667c7ad62ff13131dfa6aa23201ad26",
+      "matches_reference": true
+    },
+    {
+      "path": "using-sponsor-tools.md",
+      "sha256": "097e70d0712a14684747c75035015d3d22aa4085a9f73998d18d958c97fed9cf",
+      "matches_reference": true
+    }
+  ]
+}

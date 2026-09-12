@@ -1,0 +1,21 @@
+node_modules/
+.env
+.env.local
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+.next-build/
+*.log
+dist/
+.DS_Store
+.turbo/
+*.tsbuildinfo
+.next/
+next-env.d.ts
+assets/fonts/
+apps/mobile/.expo/
+
+# Web approval and attempt metadata (not task storage)
+.data/
