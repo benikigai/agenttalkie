@@ -200,7 +200,7 @@
 /* Atlas cue: a small centered pill, with the state spoken above it rather than inside. */
 .at-dock { position: relative; pointer-events: auto; border: 1px solid #3b4a40; background: rgba(28, 41, 33, .95); backdrop-filter: blur(16px); color: #eef1e9; border-radius: var(--at-r-pill); box-shadow: var(--at-shadow-dock); padding: 9px 14px max(9px, env(safe-area-inset-bottom)); width: auto; max-width: min(620px, 100%); margin: 0 auto; }
 .at-dock-expanded .at-dock { border-radius: var(--at-r-lg); max-width: min(760px, 100%); padding: 14px 18px max(14px, env(safe-area-inset-bottom)); }
-.at-voice-row { min-height: 46px; display: flex; align-items: center; gap: 14px; }
+.at-voice-row { min-height: 46px; display: flex; align-items: center; gap: 14px; min-width: 0; }
 /* Floated above the pill: the workspace says what it is doing, the way Atlas does. */
 .at-voice-summary { position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 9px; white-space: nowrap; text-align: center; line-height: 1.3; pointer-events: none; }
 .at-voice-summary strong { font-size: 13px; font-weight: 600; color: var(--at-ink); }
@@ -231,7 +231,7 @@
 @keyframes at-pulse-blue { 0%, 100% { box-shadow: 0 0 0 3px rgba(74, 127, 181, .18); } 50% { box-shadow: 0 0 0 8px rgba(74, 127, 181, .05); } }
 @keyframes at-blink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
-.at-dock-controls { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+.at-dock-controls { display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex: 0 0 auto; }
 .at-icon-button { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; background: #33433a; color: #edf2e8; border: 1px solid #4e5d53; border-radius: 50%; transition: background .16s ease, border-color .16s ease; }
 .at-icon-button:hover:not(:disabled) { background: #3e5044; }
 .at-icon-button[aria-pressed="true"] { border-color: #a1b79f; background: #455c49; }
@@ -243,6 +243,20 @@
 .at-sound-bar { min-width: 84px; flex: 1 1 auto; position: relative; display: flex; align-items: center; }
 .at-sound-bar canvas { display: block; width: 100%; height: 26px; }
 .at-meter-error { position: absolute; right: 0; bottom: 0; font-size: var(--at-t-meta); color: #e7b88d; }
+
+/* Voice transcript: speech is the content, so it gets turns, not a text wall.
+   The newest line is pinned into view and the top edge fades rather than
+   ending on a hard scrollbar. */
+.at-transcript { border-bottom: 1px solid #4b5a4c; padding-bottom: 14px; margin-bottom: 12px; }
+.at-transcript-scroll { max-height: 200px; overflow-y: auto; display: grid; gap: 14px; padding-right: 6px; scrollbar-width: thin; scrollbar-color: #5d6c58 transparent; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 18px); mask-image: linear-gradient(180deg, transparent 0, #000 18px); }
+.at-transcript-scroll::-webkit-scrollbar { width: 5px; }
+.at-transcript-scroll::-webkit-scrollbar-thumb { background: #5d6c58; border-radius: var(--at-r-pill); }
+.at-transcript-turn { min-width: 0; }
+.at-transcript-who { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.3px; color: #93a291; margin-bottom: 5px; }
+.at-transcript-text { font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.at-transcript-you .at-transcript-text { color: #b9c8b4; }
+.at-transcript-agent { border-left: 2px solid #4f7a5d; padding-left: 12px; }
+.at-transcript-agent .at-transcript-text { color: #f1f5ec; }
 
 .at-composer { border-bottom: 1px solid #4b5a4c; padding-bottom: 14px; margin: 0 0 12px; }
 .at-composer label { display: block; font-size: var(--at-t-meta); color: #d2ddcb; margin-bottom: 8px; font-weight: 600; }
@@ -306,6 +320,7 @@
   .at-composer-footer .at-actions { gap: 6px; }
   .at-dock-expanded .at-dock { max-height: 55dvh; overflow-y: auto; }
   .at-facts { grid-template-columns: 1fr; gap: 12px; }
+  .at-transcript-scroll { max-height: 150px; }
   .at-evidence-item { gap: 7px; padding: 10px 13px; }
   .at-evidence-title { flex-basis: 100%; order: 3; }
   .at-evidence-meta { order: 4; }
