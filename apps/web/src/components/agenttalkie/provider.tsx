@@ -124,6 +124,7 @@ function useWorkspace() {
   const delegate = useCallback(async (delegationId: string, transcript: {role: "user" | "assistant"; text: string}[]) => {
     const current = snapshotRef.current;
     const thisEpoch = epoch.current;
+    const previousExpected = expectedRef.current;
     const marker: WorkerRequest = {requestId:crypto.randomUUID(),revision:1,projectId:targetRef.current.projectId,agentId:targetRef.current.agentId,workerSessionId:targetRef.current.workerSessionId,question:"Interpreting your spoken request…"};
     expectedRef.current=marker;setExpected(marker);setError(null);
     const data=await api.delegateVoice(current.session.id,delegationId,transcript);
@@ -133,7 +134,7 @@ function useWorkspace() {
       z.object({status:z.literal("clarify"),message:z.string()}),
       z.object({status:z.literal("already_received")}),
     ]).parse(data);
-    if(parsed.status!=="accepted") { if(parsed.status==="clarify")setError(parsed.message);return parsed; }
+    if(parsed.status!=="accepted") { expectedRef.current=previousExpected;setExpected(previousExpected);if(parsed.status==="clarify")setError(parsed.message);return parsed; }
     expectedRef.current=parsed.request;setExpected(parsed.request);applySnapshot(parsed.snapshot);return parsed;
   },[applySnapshot]);
 

@@ -20,3 +20,7 @@ CREATE TABLE IF NOT EXISTS agenttalkie_workspace_context (
   workspace_id text NOT NULL, catalog jsonb NOT NULL DEFAULT '[]', selected_task_id uuid,
   observed_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE agenttalkie_jobs ADD COLUMN IF NOT EXISTS context jsonb NOT NULL DEFAULT '{}';
+ALTER TABLE agenttalkie_jobs ADD COLUMN IF NOT EXISTS runner_id text;
+ALTER TABLE agenttalkie_jobs ADD COLUMN IF NOT EXISTS claim_id uuid;
+ALTER TABLE agenttalkie_jobs ADD COLUMN IF NOT EXISTS claimed_at timestamptz;

@@ -25,7 +25,7 @@ export function ToolsStatus() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/agenttalkie/live/health", { signal: controller.signal, headers: { Accept: "application/json" } })
+    const refresh=()=>fetch("/api/agenttalkie/live/health", { signal: controller.signal, headers: { Accept: "application/json" } })
       .then(async (response) => {
         if (response.status === 401) return setLocked(true);
         if (!response.ok) return;
@@ -33,7 +33,9 @@ export function ToolsStatus() {
         if (body && typeof body === "object") setHealth(body as Health);
       })
       .catch(() => undefined);
-    return () => controller.abort();
+    void refresh();
+    const timer=setInterval(()=>void refresh(),15000);
+    return () => {controller.abort();clearInterval(timer);};
   }, []);
 
   if (!health && !locked) return null;

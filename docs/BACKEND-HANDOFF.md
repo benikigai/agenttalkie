@@ -49,3 +49,14 @@ The normal entry screen requires unlocking real workspace access. Fixture conver
 New conversation ends the current thread, stops voice through a dock remount and opens an empty durable thread. Clear conversation history confirms removal of the current thread's questions/answers, deletes unsubmitted document drafts and task selection context, and opens a new thread. Saved Ambiguous records and provider receipts are preserved. Repeated reset requests do not create extra active threads; late results cannot refill cleared history. These paths passed isolated durable-store tests.
 
 Backend changed a few UI interaction files for Ben's explicit new-conversation/clear-history request and to remove misleading historical evidence from the live view. Keep Claude's visual styles and merge later UI changes normally.
+
+
+## Live demo integration checkpoint
+
+Merged UI commits through b73f86e preserve Claude's tool panel and expandable receipt design while retaining the live session Activity endpoint, polling, real-task prompts, document Save, New conversation and Clear history. The incoming UI commits had removed those controls and restored the historical receipt endpoint. Preserve the current versions when integrating further UI work.
+
+The actual voice-created Sample VA Job Description for Ambiguous Workspace was opened in the provider UI at https://app.ambiguous.ai/docs/82ae345c-91ec-4eab-befb-f737fdaeec7f. Its contents and AgentTalkie attribution were visible. Document creation is now independently verified in the external tool. New saved-document receipts link directly to that provider's verified document URL structure.
+
+The outbound runner implements authenticated single-claim jobs, native process receipts, exact Codex-artifact binding for Claude review, replay-safe terminal events and a four-minute unknown-result timeout. The dedicated database migration is applied. Native read-only Ori Codex and Claude Code calls both returned actual session IDs in isolated public source checks. Codex session: 01a097c3-650e-7c11-9ed5-6455026248aa. Claude session: e90fa3ed-3810-4a5d-ad65-e9c2d44725ae. These are local native-process checks; product queue completion still needs deployment and verification.
+
+Ori prepends model-provider flags before the Codex exec command. Codex's --ignore-user-config drops those prepended settings, so the runner explicitly restores the OpenRouter provider after exec, using the environment credential supplied by Ori. No keys are stored in source. Outer sandbox restrictions exclude global agent instructions and skill inventories; native Codex remains read-only and Claude only has Read/Grep/Glob.

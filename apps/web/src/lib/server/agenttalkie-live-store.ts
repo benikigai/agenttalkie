@@ -36,6 +36,20 @@ export async function restore(owner: string) {
   if (!active[0]) throw new AgentTalkieError(409, "CONCURRENT_UPDATE", "The thread changed. Open it again.");
   return snapshot(active[0].data);
 }
-export async function recordEvent(owner: string, sessionId: string, request: Pick<RequestRecord,"requestId"|"revision">, provider: string, label: string, state: string, details: Record<string, unknown> = {}) {
-  await sql()`INSERT INTO agenttalkie_events(id,owner,thread_id,request_id,revision,provider,label,state,details) VALUES(${randomUUID()},${owner},${sessionId},${request.requestId},${request.revision},${provider},${label},${state},${JSON.stringify(details)}::jsonb)`;
+export async function recordEvent(owner: string, sessionId: string, request: Pick<RequestRecord,"requestId"|"revision">, provider: string, label: string, state: string, details: Record<string, unknown> = {}, eventId: string = randomUUID()) {
+  await sql()`INSERT INTO agenttalkie_events(id,owner,thread_id,request_id,revision,provider,label,state,details) VALUES(${eventId},${owner},${sessionId},${request.requestId},${request.revision},${provider},${label},${state},${JSON.stringify(details)}::jsonb) ON CONFLICT(id) DO NOTHING`;
+}
+
+export async function expireRunnerJobs(owner: string, sessionId: string) {
+  const jobs = await sql()`UPDATE agenttalkie_jobs SET state='expired' WHERE owner=${owner} AND thread_id=${sessionId} AND state IN ('queued','claimed') AND COALESCE(claimed_at,created_at)<now()-interval '4 minutes' RETURNING request,id`;
+  for (const job of jobs) {
+    await mutate(owner,sessionId,s=>{
+      const request=s.requests.find(r=>r.requestId===job.request.requestId && r.revision===job.request.revision);
+      if(request?.state!=="pending")return;
+      request.state="failed";
+      request.error={code:"RUNNER_RESULT_UNKNOWN",message:"The coding runner did not return a result within four minutes. Completion is unknown; no replacement job was launched."};
+      request.updatedAt=new Date().toISOString();
+    });
+    await recordEvent(owner,sessionId,job.request,"ori","Coding result timed out; completion unknown","failed",{providerRef:job.id});
+  }
 }
