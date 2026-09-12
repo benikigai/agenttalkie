@@ -15,3 +15,8 @@ CREATE TABLE IF NOT EXISTS agenttalkie_documents (
   state text NOT NULL CHECK (state IN ('prepared','saving','saved','unknown')),
   save_request text, provider_ref uuid, receipt jsonb, updated_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS agenttalkie_workspace_context (
+  thread_id uuid PRIMARY KEY REFERENCES agenttalkie_threads(id), owner text NOT NULL,
+  workspace_id text NOT NULL, catalog jsonb NOT NULL DEFAULT '[]', selected_task_id uuid,
+  observed_at timestamptz NOT NULL DEFAULT now()
+);

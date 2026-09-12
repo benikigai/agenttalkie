@@ -154,6 +154,20 @@ function useWorkspace() {
     }
   }, [applySnapshot]);
 
+  const reset = useCallback(async (clear = false) => {
+    const current=snapshotRef.current;
+    const thisEpoch=++epoch.current;
+    setReady(false);setLoading(true);setError(null);setSubmitting(false);setPreparing(false);
+    expectedRef.current=null;setExpected(null);setRetryRequest(null);mutation.current=false;
+    try {
+      const next=await api.resetSession(current.session.id,current.session.mode,clear);
+      if(thisEpoch!==epoch.current)return;
+      applySnapshot(next);setReady(true);
+    } catch(cause) {
+      if(thisEpoch===epoch.current)setError(cause instanceof Error?cause.message:"Could not start a new conversation.");
+    } finally {if(thisEpoch===epoch.current)setLoading(false);}
+  },[applySnapshot]);
+
   const prepare = useCallback(async () => {
     const current = snapshotRef.current;
     const result = currentAnswer(current, targetRef.current, expectedRef.current);
@@ -179,7 +193,7 @@ function useWorkspace() {
   const followup = isCurrentFollowup(snapshot, expected) && snapshot.session.preparedFollowup && sameTarget(snapshot.session.preparedFollowup, target) ? snapshot.session.preparedFollowup : null;
 
   return { snapshot, target, selectTarget, ready, loading, submitting, preparing, error, answer, currentRequest, followup,
-    start, end, sendQuestion, prepare, delegate,
+    start, end, reset, sendQuestion, prepare, delegate,
     retry: retryRequest ? () => sendQuestion(retryRequest.question, false, retryRequest) : null,
     isCurrent: (request: WorkerRequest) => {
       const wanted = expectedRef.current;

@@ -39,3 +39,13 @@ After reviewing the draft, say or type exactly "save this document". Voice deleg
 A new table is added idempotently through apps/web/scripts/live-schema.sql and has been applied to the dedicated database. Live document list permissions returned HTTP 200. Real-model intent checks and durable approval/concurrency tests passed; provider create/readback behavior is covered with mocked HTTP. An actual Ambiguous document write remains unverified until an operator approves a concrete draft. Do not label the provider write proven before that receipt exists.
 
 The UI contract is unchanged. Claude can later add an explicit save button using the same exact typed command after showing the full preview. Current voice sessions retain old instructions: reconnect voice after deployment. The live Activity endpoint now lifts providerRef into the event envelope, including actual Ambiguous task IDs and document save/readback IDs. Historical public receipt IDs remain intentionally unchanged.
+
+## Live workspace and conversation controls
+
+Task discovery now calls auth_whoami plus list_tasks against the authenticated workspace, returns up to 20 real records, and selects only a provider-returned ID or the configured initial task. Selection and displayed task order persist in agenttalkie_workspace_context. Task listing, selection/readback and Exa research passed real provider checks with an isolated test owner. The configured demo record remains readable when explicitly requested; it is no longer the only selectable task.
+
+The normal entry screen requires unlocking real workspace access. Fixture conversations are kept in test code, not presented as live functionality. The main evidence strip reads the current live conversation's Activity endpoint; historical public receipts no longer appear in live work. A document checkpoint gets an explicit Save this document to Ambiguous button.
+
+New conversation ends the current thread, stops voice through a dock remount and opens an empty durable thread. Clear conversation history confirms removal of the current thread's questions/answers, deletes unsubmitted document drafts and task selection context, and opens a new thread. Saved Ambiguous records and provider receipts are preserved. Repeated reset requests do not create extra active threads; late results cannot refill cleared history. These paths passed isolated durable-store tests.
+
+Backend changed a few UI interaction files for Ben's explicit new-conversation/clear-history request and to remove misleading historical evidence from the live view. Keep Claude's visual styles and merge later UI changes normally.
