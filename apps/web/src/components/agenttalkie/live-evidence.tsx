@@ -17,7 +17,7 @@ function shortTime(value: string) {
 }
 
 export function LiveEvidence({ onInspect }: { onInspect(): void }) {
-  const {snapshot}=useAgentTalkie();
+  const {snapshot,currentRequest}=useAgentTalkie();
   const live=snapshot.session.mode==="live";
   const sessionId=snapshot.session.id;
   const [events, setEvents] = useState<ActivityEvent[]>([]);
@@ -41,21 +41,23 @@ export function LiveEvidence({ onInspect }: { onInspect(): void }) {
 
   if (events.length === 0) return null;
 
-  // One row per provider, keeping its most recent live event.
-  const latest = new Map<string, ActivityEvent>();
-  for (const event of events) if (!latest.has(event.provider)) latest.set(event.provider, event);
+  const currentEvents = currentRequest
+    ? events.filter(event => event.requestId === currentRequest.requestId && event.revision === currentRequest.revision)
+    : events;
+  const visible = (currentEvents.length ? currentEvents : events).slice(0, 6).reverse();
 
   return <section className="at-evidence" aria-label="Live provider evidence">
     <div className="at-evidence-head">
       <p className="at-eyebrow">{live?"Activity in this conversation":"Historical provider checks"}</p>
       <button className="at-evidence-link" onClick={onInspect}>Inspect receipts <Icon name="arrow" size={13} /></button>
     </div>
-    <ul className="at-evidence-list">
-      {[...latest.values()].map((event) => <li className="at-evidence-item" key={event.eventId}>
+    <ul className="at-evidence-list" aria-live="polite" aria-relevant="additions text">
+      {visible.map((event) => <li className="at-evidence-item" key={event.eventId}>
         <span className={`at-evidence-dot at-evidence-${event.state}`} aria-hidden="true" />
         <span className="at-evidence-provider">{providerNames[event.provider]}</span>
         <span className="at-evidence-title">{event.label}</span>
         <span className="at-evidence-meta">{event.state}<span className="at-provenance-sep"> · </span>{shortTime(event.observedAt)}</span>
+        {event.safeUrl && <a className="at-evidence-link" href={event.safeUrl} target="_blank" rel="noopener noreferrer">Open in tool <Icon name="arrow" size={13} /></a>}
         {event.providerRef && <code className="at-evidence-ref">{event.providerRef.slice(0, 12)}</code>}
       </li>)}
     </ul>

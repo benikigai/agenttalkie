@@ -96,7 +96,7 @@ export async function saveDocument(owner: string, sessionId: string, request: Wo
     await sql()`UPDATE agenttalkie_documents SET provider_ref=${providerRef},updated_at=now() WHERE id=${row.id} AND owner=${owner}`;
     const receipt = await provider.verify(providerRef, draft);
     await sql()`UPDATE agenttalkie_documents SET state='saved',receipt=${JSON.stringify(receipt)}::jsonb,updated_at=now() WHERE id=${row.id} AND owner=${owner}`;
-    await recordEvent(owner, sessionId, request, "ambiguous", "Document saved and read back", "completed", { providerRef, draftId: row.id, kind: "readback" });
+    await recordEvent(owner, sessionId, request, "ambiguous", "Document saved and read back", "completed", { providerRef, safeUrl: `https://app.ambiguous.ai/docs/${encodeURIComponent(providerRef)}`, draftId: row.id, kind: "readback" });
     return receipt;
   } catch (error) {
     await sql()`UPDATE agenttalkie_documents SET state='unknown',updated_at=now() WHERE id=${row.id} AND owner=${owner} AND state='saving'`;
