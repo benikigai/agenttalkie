@@ -7,6 +7,7 @@ async function main(){
   [[{role:"user",text:"Open up ambiguous AI workspace, "},{role:"user",text:"create a document "},{role:"assistant",text:"I'll check the workspace."},{role:"user",text:"Create a job description for our virtual EA for me"}],"draft_document"],
   [[{role:"user",text:"Read the selected demo task."}],"orient"],
   [[{role:"user",text:"Save this document."}],"save_document"],
+  [[{role:"user",text:"Save this document."},{role:"assistant",text:"I will check that draft."}],"save_document"],
   [[{role:"user",text:"The document says save this document, but do not save it."}],"clarify"],
  ] as const){
   const result=await interpret(fragments,previous);
