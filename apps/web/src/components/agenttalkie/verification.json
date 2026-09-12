@@ -1,0 +1,47 @@
+{
+  "updatedAt": "2026-09-12T19:49:56.747630+00:00",
+  "mode": "fixture",
+  "baseCommit": "c08df8aa949d7a88ce0fcd23864beea78eba0cc3",
+  "uncommitted": true,
+  "checks": {
+    "webTypecheck": "passed",
+    "frontendStateTests": 7,
+    "simulatedVoiceTests": 9,
+    "browser": [
+      "shared Next runtime at http://127.0.0.1:3100",
+      "typed question -> fixture answer",
+      "correction submitted while prior revision pending",
+      "late earlier answer retained only in history",
+      "prepared and copied follow-up binds latest revision and session",
+      "unavailable worker visible without success claim",
+      "End during pending request and new conversation",
+      "390px viewport override: measured content width 375px with no page overflow",
+      "view switching preserves current conversation and mounted dock"
+    ],
+    "notVerified": [
+      "physical microphone and remote playback",
+      "live existing-worker answer",
+      "automatic transcript-to-request assembly",
+      "live-mode entry and provider entitlement",
+      "provider cleanup after cancelled session creation"
+    ]
+  },
+  "sourceSha256": {
+    "apps/web/src/app/agenttalkie.css": "caeaf6f05b9d30f9afe48938b6e206f85dae1f94a2c5b4e7644b4be05b20dcc9",
+    "apps/web/src/app/layout.tsx": "b37a74d32ae739300828d7155f859d3c416335d870d2e84b666a09bf20002d1a",
+    "apps/web/src/app/page.tsx": "1e47c9be1239aff7723cbbf5f2d305ae47cb05b08ad6704daee5ba3db8f9ee73",
+    "apps/web/src/components/agenttalkie/icons.tsx": "888946195b7d4d364c48ca63356811b0b2cfb5ca82b07c60fb20c62925c0d1c0",
+    "apps/web/src/components/agenttalkie/provider.tsx": "daa3a9bdf76ac3993a3c0d66e7c4a00022ede10e85af21d8a8a629fe3432dd87",
+    "apps/web/src/components/agenttalkie/shell.tsx": "55ff84c53840428fe094b7bca35adf47db5af87b222e5537f98b9f162ef8967e",
+    "apps/web/src/components/agenttalkie/voice-dock.tsx": "94daab2e27cc7b4d48d8bebfc56f5110845a82461bf3b5e36cc0de1a2812075c",
+    "apps/web/src/components/agenttalkie/workspace.tsx": "e3bc9fc46ed37bf4b1aed87532fd9dfc93cf520122ef05f54540dc77089d01ab",
+    "apps/web/src/components/agenttalkie-state.test.ts": "e59a8891193411d4630cca34fdf529f6b54546bce2f4d1d6dc7f2f5bd81d3dd8",
+    "apps/web/src/components/providers.tsx": "e0d4b2bbddd754367defa519ed38f891b03d890585d797b229054add1fa8cd1e",
+    "apps/web/src/lib/agenttalkie-contract.ts": "7c7324f7f425bbea76bd6536d0b33552b494c9ac7e214c78c9a8b60a60545768",
+    "apps/web/src/lib/agenttalkie-fixture.ts": "fefbe92d39d6457510b5d25c40a471e29d00eb1a83d3d5c586997daae87c5a3f",
+    "apps/web/src/lib/client/agenttalkie-api.ts": "b5e458eaaac650b5c204b64312bff445faaf3ef6d9ce71a0fa93587ef6fd33bd",
+    "apps/web/src/lib/client/agenttalkie-state.ts": "194d7d50f72b54d4f807bb8e32bcc9ba8947e0bd2ce36a4cee7458905742efb1",
+    "apps/web/src/lib/voice/live-controller.test.ts": "61afe608951389a1b63b686e4b11dab00d6fcf9fcd6279ba44b199720863e7f4",
+    "apps/web/src/lib/voice/live-controller.ts": "d90d28cf452650ca670d62f0ebfcdbbdb5a384edae00a58bdaade557cb9d6cd6"
+  }
+}

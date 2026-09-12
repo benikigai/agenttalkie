@@ -1,0 +1,35 @@
+{
+  "observedAt": "2026-09-12T19:46:06.777941+00:00",
+  "mode": "offline_mocked_http",
+  "contractVersion": "AT-contract-0.1",
+  "inheritedBaseline": "c08df8aa949d7a88ce0fcd23864beea78eba0cc3",
+  "tests": {
+    "command": "node --import tsx --test apps/web/src/lib/server/agenttalkie-adapters/*.test.ts",
+    "passed": 64,
+    "failed": 0,
+    "includes": "adapter normalization, authorization, deduplication, and backend correction/follow-up integration"
+  },
+  "typecheck": {
+    "command": "node node_modules/typescript/bin/tsc --noEmit --strict --skipLibCheck --target ES2022 --module commonjs --moduleResolution node --esModuleInterop apps/web/src/lib/server/agenttalkie-adapters/index.ts apps/web/src/lib/server/agenttalkie-adapters/openclaw.test.ts apps/web/src/lib/server/agenttalkie-adapters/openclaw-integration.test.ts",
+    "exitCode": 0
+  },
+  "sha256": {
+    "apps/web/src/lib/server/agenttalkie-adapters/index.ts": "25b117e0bafc233ad7c9d3dc7dd95758c2e829b2ebf8d524d0747d9e1cc26e50",
+    "apps/web/src/lib/server/agenttalkie-adapters/openclaw-integration.test.ts": "e3004f947eefba7e94f3f598f45da40c8acc0613b79b9f640bc29cad836ee560",
+    "apps/web/src/lib/server/agenttalkie-adapters/openclaw.test.ts": "1ad1b1e4cd8afe389306c48942546979e75f431fb40a7cd878631247aac2ceef",
+    "apps/web/src/lib/server/agenttalkie-adapters/openclaw.ts": "f79cbad3888737acc3ea1a2cb4da63b29dccdcede61e905e27aaeb4a0f36e527",
+    "apps/web/src/lib/agenttalkie-contract.ts": "7c7324f7f425bbea76bd6536d0b33552b494c9ac7e214c78c9a8b60a60545768",
+    "apps/web/src/lib/agenttalkie-fixture.ts": "fefbe92d39d6457510b5d25c40a471e29d00eb1a83d3d5c586997daae87c5a3f",
+    "apps/web/src/lib/server/agenttalkie-service.ts": "4bba3f58f783edb6a277e8d09202142eca02bea91c401eb65aeec1ce3c0983b3",
+    "package-lock.json": "8a7d68d9816ba51a795897fba4941c90c7e7d965608792541439843a03bc779d"
+  },
+  "liveGatewayRequest": "not_attempted",
+  "liveWorkerReply": "not_verified",
+  "runtimeIntegration": "not_registered; BACKEND owns runtime and registration",
+  "fullWebTypecheck": {
+    "command": "npm run typecheck --workspace web -- --incremental false",
+    "exitCode": 0,
+    "completedAt": "2026-09-12T19:46:59.052230+00:00",
+    "scope": "current shared checkout; source hashes below cover adapter integration and dependencies, not every frontend file"
+  }
+}

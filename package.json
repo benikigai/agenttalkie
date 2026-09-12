@@ -14,6 +14,7 @@
     "apps/web"
   ],
   "scripts": {
+    "build:agenttalkie": "npm run build --workspace web",
     "dev": "npm run dev:web",
     "dev:slack": "npm run dev --workspace channel",
     "channel:status": "npx copilotkit@latest channels status --json",
