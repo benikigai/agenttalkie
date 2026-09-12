@@ -11,6 +11,7 @@ import subprocess
 import time
 import urllib.request
 import uuid
+from terminal_output import TerminalOutput
 
 
 def isolation_profile():
@@ -30,7 +31,7 @@ def worker_environment():
     return env
 
 
-def execute(job, checkout, journal, revision, heartbeat):
+def execute(job, checkout, journal, revision, heartbeat, publish=lambda entries: None):
     harness = "claude" if job["kind"] == "review" else "codex"
     model = "anthropic/claude-haiku-4.5" if harness == "claude" else "openai/gpt-5.4-mini"
     context = job.get("context") or {}
@@ -64,18 +65,25 @@ def execute(job, checkout, journal, revision, heartbeat):
                   "-c", "tool_output_token_limit=1500", "--json", "--output-last-message", str(answer_file), "-"]
     else:
         native = ["ori", "claude", "--model", model, "--reasoning-effort", "low", "--bare", "--setting-sources", "", "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
-                  "--tools", "Read,Grep,Glob", "--allowedTools", "Read,Grep,Glob", "--no-session-persistence", "--max-budget-usd", "0.50", "--output-format", "json", "--print"]
+                  "--tools", "Read,Grep,Glob", "--allowedTools", "Read,Grep,Glob", "--no-session-persistence", "--max-budget-usd", "0.50", "--output-format", "stream-json", "--verbose", "--print"]
     stdout_path = journal / (key + ".stdout")
     stderr_path = journal / (key + ".stderr")
     with stdout_path.open("w") as out, stderr_path.open("w") as err:
         process = subprocess.Popen(["/usr/bin/sandbox-exec", "-p", isolation_profile(), *native], cwd=checkout,
                                    env=worker_environment(), stdin=subprocess.PIPE, stdout=out, stderr=err, text=True, start_new_session=True)
+        terminal = TerminalOutput(stdout_path, harness, checkout, publish,
+                                  [value for key, value in os.environ.items() if any(word in key for word in ("TOKEN", "SECRET", "API_KEY"))])
+        terminal.add("$ ori " + harness + " --model " + model + " (read-only job)")
         process.stdin.write(prompt)
         process.stdin.close()
         deadline = time.monotonic() + 150
         last_heartbeat = 0
         try:
             while process.poll() is None:
+                try:
+                    terminal.read()
+                except Exception:
+                    pass
                 if time.monotonic() > deadline or stdout_path.stat().st_size > 1_000_000 or stderr_path.stat().st_size > 1_000_000:
                     os.killpg(process.pid, signal.SIGTERM)
                     try:
@@ -98,6 +106,12 @@ def execute(job, checkout, journal, revision, heartbeat):
                 except subprocess.TimeoutExpired:
                     os.killpg(process.pid, signal.SIGKILL)
                     process.wait()
+    try:
+        terminal.read()
+        terminal.add("Process exit: " + str(process.returncode))
+        terminal.flush()
+    except Exception:
+        print("Live output delivery delayed; the terminal result still follows.", flush=True)
     native_id = None
     if harness == "codex":
         events = []
@@ -110,7 +124,8 @@ def execute(job, checkout, journal, revision, heartbeat):
         answer = answer_file.read_text().strip() if answer_file.exists() else ""
     else:
         try:
-            result = json.loads(stdout_path.read_text())
+            results = [json.loads(line) for line in stdout_path.read_text().splitlines() if line.startswith("{")]
+            result = next((event for event in reversed(results) if event.get("type") == "result"), {})
         except json.JSONDecodeError:
             result = {}
         native_id = result.get("session_id")
@@ -149,14 +164,14 @@ def main():
     print("AgentTalkie runner started", runner_id, "repository", args.revision, flush=True)
     while time.monotonic() < deadline and count < args.max_jobs:
         try:
-            job = call({"operation": "claim"}).get("job")
+            job = call({"operation": "claim", "outputVersion": 1}).get("job")
             if not job:
                 time.sleep(5)
                 continue
             count += 1
             print("Claimed", job["id"], job["kind"], flush=True)
             try:
-                result = execute(job, args.checkout, args.journal, args.revision, lambda: call({"operation": "heartbeat"}))
+                result = execute(job, args.checkout, args.journal, args.revision, lambda: call({"operation": "heartbeat"}), lambda entries: call({"operation":"output","jobId":job["id"],"claimId":job["claimId"],"entries":entries}))
             except Exception as error:
                 result = {"status": "failed", "answer": str(error) if isinstance(error, RuntimeError) else "The local coding process could not complete. Check its runner journal.",
                           "harness": "claude" if job["kind"] == "review" else "codex", "nativeSessionId": None, "repositoryRevision": args.revision,

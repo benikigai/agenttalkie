@@ -8,9 +8,11 @@ import { Icon } from "./icons";
 import { ActivityDrawer } from "./activity";
 import { LiveEvidence } from "./live-evidence";
 import { ToolsStatus } from "./tools-status";
+import { RunnerTerminal } from "./runner-terminal";
 
 /** Things this agent can actually do today, phrased so they can be spoken. */
 const STARTER_PROMPTS = [
+  { label: "Inspect the code with Codex", tool: "Codex CLI", send: "Have Codex inspect apps/web/src/lib/server/agenttalkie-documents.ts in the public AgentTalkie repository. Explain duplicate-save protection. Read only that file and give three concise findings." },
   { label: "Show my Ambiguous tasks", tool: "Tasks", send: "Show my Ambiguous tasks and tell me which one needs a decision." },
   { label: "Draft a document in Ambiguous", tool: "Tasks", send: "Draft a sample virtual assistant job description for me to review before saving to Ambiguous." },
   { label: "Research this and cite the sources", tool: "Research", send: "Research official React guidance for useEffect cleanup with Exa and show the sources." },
@@ -152,6 +154,7 @@ export function AgentTalkieWorkspace() {
         <div className="at-actions"><button className="at-button" onClick={()=>setClearOpen(false)}>Cancel</button><button className="at-button" onClick={()=>{setClearOpen(false);setView("work");setActivityOpen(false);void workspace.reset(true);}}>Clear and start new</button></div>
       </div>}
       <LiveEvidence onInspect={() => setActivityOpen(true)} />
+      <RunnerTerminal />
       <section className="at-stage" aria-label={view === "work" ? "Current work" : "Conversation history"}>
         {workspace.error && <div className="at-notice at-notice-alert" role="alert">{workspace.error}{workspace.retry && <button className="at-button" style={{ marginLeft: 12 }} onClick={() => void workspace.retry?.()} disabled={submitting}>Retry same request</button>}{!ready && !loading && <button className="at-button" style={{ marginLeft: 12 }} onClick={() => void workspace.start()}>Reconnect workspace</button>}</div>}
         {!ready && <p className={`at-notice${loading ? " at-notice-working" : ""}${snapshot.session.status === "ended" || loading ? "" : " at-notice-alert"}`} role="status">{snapshot.session.status === "ended" ? "Conversation ended. Your questions and answers remain here for review." : loading ? "Opening the workspace. The evidence below is a fixture preview." : "The workspace is disconnected. Reconnect to ask a question."}</p>}
@@ -174,7 +177,7 @@ export function AgentTalkieWorkspace() {
             {(currentRequest.state === "failed" || currentRequest.state === "unavailable") && <div className="at-state" role="status"><Icon name="alert" /><div><p>{currentRequest.state === "unavailable" ? "The agent is unavailable." : "The request did not complete."}</p><p>{currentRequest.error?.message ?? "No answer was returned."}</p></div></div>}
             {answer && <article className="at-response"><div className="at-response-header"><span className="at-agent-monogram" style={{ width: 28, height: 28, fontSize: 16 }}>{target.agentName.slice(0, 1)}</span><strong>{target.agentName}</strong><span className="at-result-caption">Finding received</span></div>
               <p className="at-answer">{finding.body || answer.answer}</p><EvidenceDetails result={answer} />
-              <div className="at-actions">{answer.evidence.some(e=>e.kind==="checkpoint"&&e.reference.startsWith("AgentTalkie document draft ")) && <button className="at-button at-button-primary" disabled={!available || submitting} onClick={()=>void workspace.sendQuestion("save this document")}>Save this document to Ambiguous</button>}<button className="at-button" disabled={!available || submitting || preparing} onClick={() => { setCopiedKey(null); void workspace.prepare(); }}>{preparing ? "Preparing…" : "Prepare follow-up"}<Icon name="arrow" size={14} /></button><button className="at-button" onClick={() => setView("history")}>View history</button></div>
+              <div className="at-actions">{answer.evidence.some(e=>e.kind==="worker_reply"&&e.reference.startsWith("Ori codex job ")) && <button className="at-button at-button-primary" disabled={!available || submitting} onClick={()=>void workspace.sendQuestion("Have Claude Code independently review this exact Codex artifact against the same repository file.")}>Review with Claude Code</button>}{answer.evidence.some(e=>e.kind==="checkpoint"&&e.reference.startsWith("AgentTalkie document draft ")) && <button className="at-button at-button-primary" disabled={!available || submitting} onClick={()=>void workspace.sendQuestion("save this document")}>Save this document to Ambiguous</button>}<button className="at-button" disabled={!available || submitting || preparing} onClick={() => { setCopiedKey(null); void workspace.prepare(); }}>{preparing ? "Preparing…" : "Prepare follow-up"}<Icon name="arrow" size={14} /></button><button className="at-button" onClick={() => setView("history")}>View history</button></div>
             </article>}
             {followup && <section className="at-followup" aria-label="Prepared follow-up"><p className="at-eyebrow">Prepared · Not sent</p><h3>A next step for {followup.recipient}</h3>
               <dl className="at-facts"><div><dt>Recipient session</dt><dd><code>{followup.workerSessionId}</code></dd></div><div><dt>Question revision</dt><dd>{followup.revision}</dd></div></dl><p>{followup.scope}</p>

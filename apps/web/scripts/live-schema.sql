@@ -24,3 +24,10 @@ ALTER TABLE agenttalkie_jobs ADD COLUMN IF NOT EXISTS context jsonb NOT NULL DEF
 ALTER TABLE agenttalkie_jobs ADD COLUMN IF NOT EXISTS runner_id text;
 ALTER TABLE agenttalkie_jobs ADD COLUMN IF NOT EXISTS claim_id uuid;
 ALTER TABLE agenttalkie_jobs ADD COLUMN IF NOT EXISTS claimed_at timestamptz;
+CREATE TABLE IF NOT EXISTS agenttalkie_job_output (
+ job_id text NOT NULL REFERENCES agenttalkie_jobs(id) ON DELETE CASCADE,
+ sequence integer NOT NULL CHECK(sequence BETWEEN 1 AND 200),
+ text text NOT NULL CHECK(length(text)<=4000),
+ observed_at timestamptz NOT NULL DEFAULT now(),
+ PRIMARY KEY(job_id,sequence)
+);
