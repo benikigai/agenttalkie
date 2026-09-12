@@ -37,7 +37,15 @@ async function call(c:Context,connection:McpConnection,tool:Tool,args:Record<str
   if(toolMode(tool)!=="read"&&!approved) throw new AgentTalkieError(409,"TOOL_APPROVAL_REQUIRED","Review and approve the exact workspace action first.");
   await current(c);
   await recordEvent(c.owner,c.sessionId,c.request,"ambiguous",`${tool.name} ${approved?"executing":"requested"}`,"running",{tool:tool.name,inputs:JSON.stringify(scrubResult(args)).slice(0,480),kind:approved?"write_attempt":"provider_request"});
-  const result=output(await connection.callTool({name:tool.name,arguments:args}));
+  let raw:CallToolResult;
+  try {raw=await connection.callTool({name:tool.name,arguments:args});}
+  catch(error){
+    const message=error instanceof Error?error.message:"Unknown MCP transport error";
+    const safe=message.replaceAll(process.env.AMBIGUOUS_API_KEY||"__no_key__","[redacted]").slice(0,500);
+    console.error("Ambiguous direct tool failed",tool.name,safe);
+    throw new AgentTalkieError(502,"WORKSPACE_TOOL_UNAVAILABLE",`Ambiguous ${tool.name} could not return a result. No successful ${approved?"change":"read"} is claimed.`);
+  }
+  const result=output(raw);
   const record=resultObject(result); const id=typeof record?.id==="string"?record.id:null;
   await recordEvent(c.owner,c.sessionId,c.request,"ambiguous",`${tool.name} returned`,"completed",{tool:tool.name,result:JSON.stringify(result).slice(0,480),...(id?{providerRef:id}:{}),...(recordLink(result)?{safeUrl:recordLink(result)!}:{}),kind:"source_returned"});
   return result;
