@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {randomUUID,createHmac} from "node:crypto";
 import {POST} from "../src/app/api/agenttalkie/runner/route";
-import {restore,load,sql,liveTarget,mutate} from "../src/lib/server/agenttalkie-live-store";
+import {restore,load,sql,liveTarget,mutate,expireRunnerJobs} from "../src/lib/server/agenttalkie-live-store";
 import {admit} from "../src/lib/server/agenttalkie-coordinator";
 
 async function main(){
@@ -28,6 +28,11 @@ async function main(){
   assert.equal((await call({...result,status:"failed"})).status,409);
   assert.equal((await load(owner,session.session.id)).session.requests[0].state,"completed");
   assert.equal((await sql()`SELECT id FROM agenttalkie_events WHERE owner=${owner} AND details->>'kind'='source_returned'`).length,1);
+  const timedOut={...request,requestId:randomUUID()};
+  await admit(owner,session.session.id,timedOut);
+  await sql()`INSERT INTO agenttalkie_jobs(id,owner,thread_id,request,kind,state,created_at) VALUES(${randomUUID()},${owner},${session.session.id},${JSON.stringify(timedOut)}::jsonb,'investigate','queued',now()-interval '5 minutes')`;
+  await expireRunnerJobs(owner,session.session.id);
+  assert.equal((await load(owner,session.session.id)).session.requests.find(r=>r.requestId===timedOut.requestId)?.error?.code,"RUNNER_RESULT_UNKNOWN");
   await mutate(owner,session.session.id,s=>{s.requests=[];s.activeRequestId=null;s.activeRevision=null;s.status="ended";});
   assert.equal((await call(result)).status,200);
   assert.equal((await load(owner,session.session.id)).session.requests.length,0);
