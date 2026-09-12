@@ -298,3 +298,48 @@ test("cleanup failures do not mask controlled provider errors", async (t) => {
   assert.match(body, /Unable to reach Ambiguous/);
   assert.doesNotMatch(body, /hidden-token/);
 });
+
+test("host policy allows loopback and configured demo origins, and refuses everything else", async (t) => {
+  const previous = process.env.AGENTTALKIE_PUBLIC_DEMO_ORIGINS;
+  t.after(() => {
+    if (previous === undefined) delete process.env.AGENTTALKIE_PUBLIC_DEMO_ORIGINS;
+    else process.env.AGENTTALKIE_PUBLIC_DEMO_ORIGINS = previous;
+  });
+  const handler = createFollowupHandler({ connect: () => undefined, directory: "/unused" });
+  const get = (host: string, scheme = "https") =>
+    handler(new Request(`${scheme}://${host}/api/followups`, { headers: { host } }));
+
+  // Loopback stays allowed even with no allowlist configured.
+  delete process.env.AGENTTALKIE_PUBLIC_DEMO_ORIGINS;
+  assert.equal((await get("localhost:3100", "http")).status, 200);
+  // An unlisted public host is refused while the allowlist is empty.
+  assert.equal((await get("agenttalkie.app")).status, 403);
+
+  process.env.AGENTTALKIE_PUBLIC_DEMO_ORIGINS = "https://agenttalkie.app";
+  // The listed origin is now accepted.
+  assert.equal((await get("agenttalkie.app")).status, 200);
+  // A different host is still refused, including a lookalike suffix.
+  assert.equal((await get("evil.example")).status, 403);
+  assert.equal((await get("agenttalkie.app.evil.example")).status, 403);
+  // http is not https, so the same hostname over plain http is not the listed origin.
+  assert.equal((await get("agenttalkie.app", "http")).status, 403);
+});
+
+test("a configured demo origin still enforces the cross-origin post check", async () => {
+  const previous = process.env.AGENTTALKIE_PUBLIC_DEMO_ORIGINS;
+  process.env.AGENTTALKIE_PUBLIC_DEMO_ORIGINS = "https://agenttalkie.app";
+  try {
+    const handler = createFollowupHandler({ connect: () => undefined, directory: "/unused" });
+    const response = await handler(
+      new Request("https://agenttalkie.app/api/followups", {
+        method: "POST",
+        headers: { host: "agenttalkie.app", origin: "https://evil.example", cookie, "content-type": "application/json" },
+        body: JSON.stringify(proposal),
+      }),
+    );
+    assert.equal(response.status, 403);
+  } finally {
+    if (previous === undefined) delete process.env.AGENTTALKIE_PUBLIC_DEMO_ORIGINS;
+    else process.env.AGENTTALKIE_PUBLIC_DEMO_ORIGINS = previous;
+  }
+});
