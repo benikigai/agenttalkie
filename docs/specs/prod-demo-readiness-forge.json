@@ -1,0 +1,50 @@
+[
+  {
+    "id": 0,
+    "category": "simple",
+    "description": "Keep a dev server running under op run --env-file=.env.op for the whole session so a known-good demo surface exists while production changes. Do not start a second Next dev server against this checkout.",
+    "verify": "curl -sf http://127.0.0.1:3100/api/copilotkit/info",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 1,
+    "category": "simple",
+    "description": "Set production environment values on the Vercel project agenttalkie: OPENAI_API_KEY, EXA_API_KEY, AMBIGUOUS_API_KEY from 1Password via op read, AGENTTALKIE_LIVE_VOICE_ENABLED=true, AGENTTALKIE_PUBLIC_DEMO_ORIGINS=https://agenttalkie.app. Redeploy.",
+    "verify": "curl -sf https://agenttalkie.app/api/copilotkit/info",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 2,
+    "category": "moderate",
+    "description": "In apps/web/src/lib/server/followup-http.ts replace the hardcoded loopback host check with the existing AGENTTALKIE_PUBLIC_DEMO_ORIGINS allowlist used by agenttalkie-http.ts, keeping loopback always permitted and leaving the DNS-rebinding and SameSite cookie behaviour unchanged. Add unit tests for allowed loopback, allowed listed origin, denied unlisted origin and denied empty allowlist.",
+    "verify": "npm run typecheck --workspace web && npm run test --workspace web",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 3,
+    "category": "moderate",
+    "description": "Exercise live voice on the deployed origin with a real microphone and confirm a gpt-live-1 session identifier, audio round trip and a delegation identifier on the resulting request.",
+    "verify": "npm run test --workspace web",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 4,
+    "category": "complex",
+    "description": "Start the OpenClaw gateway on Elias, expose it through a cloudflared tunnel, and pass gatewayUrl, resolveToken and at least one target into createOpenClawAdapter in apps/web/src/lib/server/agenttalkie-runtime.ts. Abort at 15:20 regardless of progress and revert the registration to createOpenClawAdapter() if incomplete.",
+    "verify": "npm run test --workspace web",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 5,
+    "category": "simple",
+    "description": "Update SUBMISSION.md and the README status table so every sponsor row states its verified level with a provider reference, and anything not demonstrated appears under limitations.",
+    "verify": "npm run typecheck --workspace web",
+    "passes": false,
+    "skipped": false
+  }
+]
