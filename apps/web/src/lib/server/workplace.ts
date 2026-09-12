@@ -192,6 +192,7 @@ export class AmbiguousWorkplace implements Workplace {
 
 export function configuredWorkplace(apiKey = process.env.AMBIGUOUS_API_KEY): {
   workplace: AmbiguousWorkplace;
+  connection: McpConnection;
   close(): Promise<void>;
 } {
   if (!apiKey?.trim())
@@ -228,6 +229,7 @@ export function configuredWorkplace(apiKey = process.env.AMBIGUOUS_API_KEY): {
     },
   };
   return {
+    connection,
     workplace: new AmbiguousWorkplace(connection),
     close: () => client.close(),
   };

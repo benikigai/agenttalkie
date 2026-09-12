@@ -13,6 +13,7 @@ export async function POST(request: Request) {
    if(operation==="clear"){s.requests=[];s.activeRequestId=null;s.activeRevision=null;}
   });
   if(operation==="clear"){
+   await sql()`DELETE FROM agenttalkie_tool_actions WHERE owner=${owner} AND thread_id=${sessionId} AND state='prepared'`;
    await sql()`DELETE FROM agenttalkie_documents WHERE owner=${owner} AND thread_id=${sessionId} AND state='prepared'`;
    await sql()`DELETE FROM agenttalkie_workspace_context WHERE owner=${owner} AND thread_id=${sessionId}`;
   }

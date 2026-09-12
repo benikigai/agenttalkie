@@ -31,3 +31,9 @@ CREATE TABLE IF NOT EXISTS agenttalkie_job_output (
  observed_at timestamptz NOT NULL DEFAULT now(),
  PRIMARY KEY(job_id,sequence)
 );
+CREATE TABLE IF NOT EXISTS agenttalkie_tool_actions (
+ id text PRIMARY KEY, owner text NOT NULL, thread_id uuid NOT NULL REFERENCES agenttalkie_threads(id),
+ tool_name text NOT NULL, arguments jsonb NOT NULL, schema_hash text NOT NULL, action_hash text NOT NULL,
+ before_state jsonb, state text NOT NULL CHECK(state IN ('prepared','executing','completed','unknown')),
+ approval_request text, result jsonb, updated_at timestamptz NOT NULL DEFAULT now()
+);
