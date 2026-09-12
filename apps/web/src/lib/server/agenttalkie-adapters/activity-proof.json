@@ -1,0 +1,65 @@
+{
+  "revision": "AT-activity-0.1",
+  "exa": {
+    "provider": "exa",
+    "state": "completed",
+    "observedAt": "2026-09-12T20:47:50.894Z",
+    "providerRef": "26ff394d654cb8c6c8139d1748c007cb",
+    "sources": [
+      {
+        "title": "Untitled",
+        "url": "https://react.dev/learn/synchronizing-with-effects"
+      },
+      {
+        "title": "useEffect",
+        "url": "https://react.dev/reference/react/useEffect"
+      },
+      {
+        "title": "Untitled",
+        "url": "https://react.dev/learn/removing-effect-dependencies"
+      }
+    ],
+    "usage": {
+      "outputTokens": 2494,
+      "resultsCount": 10,
+      "searchTime": 1005.8008409999311
+    },
+    "costDollars": 0.007,
+    "details": {
+      "endpoint": "https://api.exa.ai/context"
+    },
+    "startedAt": "2026-09-12T20:47:49.524Z",
+    "query": "React useEffect AbortController fetch cleanup official documentation examples"
+  },
+  "ori": {
+    "provider": "ori",
+    "state": "interrupted",
+    "observedAt": "2026-09-12T20:50:24.717Z",
+    "details": {
+      "harness": "codex"
+    },
+    "requestedModel": "openai/gpt-5.4-mini",
+    "credentialRoute": "Ori global OpenRouter OAuth",
+    "actualUpstreamProvider": null,
+    "actualModelConfirmed": false,
+    "artifact": null,
+    "checkout": "https://github.com/benikigai/agenttalkie",
+    "inputSha256": "85951e076432caa9af89c5c847b881a7962e5fbcbfc75d15aa84cc4a9272c2c0"
+  },
+  "ambiguous": {
+    "provider": "ambiguous",
+    "state": "observed",
+    "evidenceMode": "live",
+    "transport": "mcp-bearer",
+    "workspaceName": "configured workspace",
+    "observedAt": "2026-09-12T21:07:57.000Z",
+    "providerRef": null,
+    "taskRead": "confirmed",
+    "reason": "Demo task created and read back",
+    "taskTitle": "Demo task",
+    "taskUrl": null,
+    "readbackConfirmed": true,
+    "workspaceReads": 1,
+    "workspaceWrites": 1
+  }
+}

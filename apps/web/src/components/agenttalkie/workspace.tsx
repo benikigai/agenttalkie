@@ -119,7 +119,7 @@ export function AgentTalkieWorkspace() {
       <nav className="at-tabs" aria-label="Workspace view">
         <button className="at-tab" aria-pressed={view === "work"} onClick={() => setView("work")}><Icon name="work" size={15} /> Current work</button>
         <button className="at-tab" aria-pressed={view === "history"} onClick={() => setView("history")}><Icon name="history" size={15} /> Conversation history <span className="at-tab-count">{history.length}</span></button>
-        <button className="at-tab" aria-expanded={activityOpen} onClick={() => setActivityOpen(true)}><Icon name="source" size={15} /> Activity</button>
+        <button className="at-tab" aria-expanded={activityOpen} aria-controls="at-activity-panel" onClick={() => setActivityOpen(true)}><Icon name="source" size={15} /> Activity</button>
       </nav>
       <section className="at-stage" aria-label={view === "work" ? "Current work" : "Conversation history"}>
         {workspace.error && <div className="at-notice" role="alert">{workspace.error}{workspace.retry && <button className="at-button" style={{ marginLeft: 12 }} onClick={() => void workspace.retry?.()} disabled={submitting}>Retry same request</button>}{!ready && !loading && <button className="at-button" style={{ marginLeft: 12 }} onClick={() => void workspace.start()}>Reconnect workspace</button>}</div>}

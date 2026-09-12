@@ -30,17 +30,17 @@ AgentTalkie is a persistent voice workspace over that fleet. You ask one questio
 
 | Sponsor | State | Evidence |
 |---|---|---|
-| **Ambiguous AI** | **Live.** Task created and read back in workspace "Tinkerer" over MCP with a bearer credential. Four tool schemas verified against the live catalog before any write. | Workspace `411b7a44-b117-461e-b9de-91e242701db2`, record `d7f17ff1-2a42-4c0f-85c4-6d3117e61967`, task "AgentTalkie demo: verify the live agent standup". Read-back confirmed: the create response matched `get_task` exactly. One read, one write. |
+| **Ambiguous AI** | **Live provider proof.** One demo task was created and confirmed by exact readback through a managed integration identity. | One create and one readback. The provider returned no safe task URL, so the public app does not construct one. Exact correlation stays in the local evidence bundle. |
 | **Exa** | **Live.** One completed retrieval against `api.exa.ai/context` returning ten results with linked sources. | Provider ref `26ff394d654cb8c6c8139d1748c007cb`, observed 2026-09-12T20:47:50Z, 1.0s search time, $0.007. |
 | **CopilotKit / AG-UI** | **Integrated, runtime not running.** The workspace is wired to the CopilotKit runtime and AG-UI. `/api/copilotkit/info` currently returns a typed 500 because no OpenAI credential is present. | Commit `0202785`. Limitation recorded in `components/agenttalkie/verification.json`. |
-| **OpenRouter** | **Attempted, not confirmed.** An Ori coding-harness job was requested through Ori's OpenRouter OAuth route for `openai/gpt-5.4-mini` and was interrupted. The upstream provider and actual model were never confirmed. | Provider ref `01a09760-e0c4-7693-8706-eb1c00a064cd`, `actualModelConfirmed: false`. |
+| **OpenRouter** | **Attempted, not confirmed.** An Ori coding-harness job was requested through Ori's OpenRouter OAuth route for `openai/gpt-5.4-mini` and was interrupted. The upstream provider and actual model were never confirmed. | The public receipt records the interrupted state and `actualModelConfirmed: false` without exposing the internal run ID. |
 | **OpenAI GPT-Live** | **Not verified.** The WebRTC controller and server broker are implemented and covered by simulated tests. Physical microphone capture and remote playback were not completed. | `components/agenttalkie/verification.json`, `notVerified`. |
 
 Sponsor count is not a judging criterion. Two integrations are real and evidenced; the rest are stated at their actual level.
 
 ## Evidence for the judging criteria
 
-**Core Requirements & Functionality.** One complete workflow runs end to end: question, attributed answer with source and session, prepared follow-up bound to recipient and revision, and an Ambiguous task whose saved state is confirmed by re-reading the provider record rather than trusting the write response. 165 automated tests pass; typecheck is clean.
+**Core Requirements & Functionality.** The labeled public fixture runs question, attributed answer, correction, history, prepared follow-up and End in one browser tab. Separate live provider evidence records an Ambiguous task whose saved state was confirmed by re-reading the provider record rather than trusting the write response. 165 automated tests pass; typecheck is clean.
 
 **Innovation & Theme Alignment.** The interaction only exists because the agent lives beside the fleet's own sessions. The demo shows existing agent context before any prompt, and the fleet rail shows per-agent availability, including an agent that cannot be reached.
 
@@ -53,7 +53,7 @@ Sponsor count is not a judging criterion. Two integrations are real and evidence
 - Live microphone capture, remote playback, and a reply from an existing OpenClaw worker session are not verified. The OpenClaw gateway request was not attempted with a live credential.
 - The demonstrated conversation uses a labeled fixture worker. The evidence kind is displayed on every result, and fixture results are marked `Fixture`.
 - CopilotKit's runtime route needs an OpenAI credential to respond.
-- Application state lasts for the server process. API access is restricted to loopback. A public deployment needs authentication, a trusted-origin policy and durable storage.
+- The public deployment allows the labeled client fixture only. Live sessions stay blocked until authentication, durable state and an admitted provider route are implemented.
 
 ## Deliverables
 
