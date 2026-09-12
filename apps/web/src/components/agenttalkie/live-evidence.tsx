@@ -1,20 +1,9 @@
 "use client";
 
-/**
- * Live provider evidence, surfaced in the workspace rather than behind the drawer.
- *
- * The workspace conversation runs on fixture data until a real worker adapter
- * registers a live target, so the mode pill reads "Fixture". That is accurate,
- * but it buries the provider work that is genuinely live: an Exa retrieval and
- * an Ambiguous task that was created and read back. Those carry provider
- * references and belong in front of the reader, not one click away.
- *
- * Reads the same ledger the drawer reads. Renders nothing when no live event
- * exists, so it never manufactures reassurance.
- */
 import { useEffect, useState } from "react";
 import { activityLedgerSchema, orderActivityEvents, type ActivityEvent } from "@/lib/agenttalkie-activity";
 import { Icon } from "./icons";
+import { useAgentTalkie } from "./provider";
 
 /** What the event actually did, in the user's language. */
 const actionVerbs: Record<string, string> = {
@@ -24,7 +13,7 @@ const actionVerbs: Record<string, string> = {
   source_returned: "Researched",
   proposed_action: "Proposed",
   approval: "Approved",
-  write_attempt: "Created",
+  write_attempt: "Writing",
   readback: "Verified",
   failure: "Failed",
 };
@@ -54,36 +43,44 @@ function shortTime(value: string) {
 }
 
 export function LiveEvidence({ onInspect }: { onInspect(): void }) {
+  const {snapshot,currentRequest}=useAgentTalkie();
+  const live=snapshot.session.mode==="live";
+  const sessionId=snapshot.session.id;
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [preview, setPreview] = useState<{ title: string; url: string } | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/agenttalkie/activity", { signal: controller.signal, headers: { Accept: "application/json" } })
+    setEvents([]);
+    setPreview(null);
+    const refresh=()=>fetch(live?`/api/agenttalkie/live/activity?sessionId=${sessionId}`:"/api/agenttalkie/activity", { signal: controller.signal, headers: { Accept: "application/json" } })
       .then((response) => (response.ok ? response.json() : null))
       .then((body) => {
         if (!body) return;
         const ledger = activityLedgerSchema.safeParse(body);
-        if (!ledger.success) return;
+        if (!ledger.success || controller.signal.aborted) return;
         setEvents(orderActivityEvents(ledger.data.events).reverse().filter((event) => event.evidenceMode === "live"));
       })
       .catch(() => undefined);
-    return () => controller.abort();
-  }, []);
+    void refresh();
+    const timer=live?setInterval(()=>void refresh(),1500):undefined;
+    return () => {controller.abort();clearInterval(timer);};
+  }, [live,sessionId]);
 
   if (events.length === 0) return null;
 
-  // Every action, newest first. This trail is server-side, so it survives
-  // starting a new conversation.
-  const trail = events.slice(0, 8);
+  const currentEvents = currentRequest
+    ? events.filter(event => event.requestId === currentRequest.requestId && event.revision === currentRequest.revision)
+    : events;
+  const visible = (currentEvents.length ? currentEvents : events).slice(0, 6).reverse();
 
   return <section className="at-evidence" aria-label="Live provider evidence">
     <div className="at-evidence-head">
-      <p className="at-eyebrow">What the agent did</p>
+      <p className="at-eyebrow">Activity in this conversation</p>
       <button className="at-evidence-link" onClick={onInspect}>Inspect receipts <Icon name="arrow" size={13} /></button>
     </div>
-    <ul className="at-evidence-list">
-      {trail.map((event) => {
+    <ul className="at-evidence-list" aria-live="polite" aria-relevant="additions text">
+      {visible.map((event) => {
         const detail = event.details ?? {};
         // Show whatever the provider reported, most descriptive first, rather
         // than a whitelist that silently drops fields a new provider adds.
