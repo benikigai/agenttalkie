@@ -7,6 +7,7 @@ import { safeSourceUrl, sameTarget } from "@/lib/client/agenttalkie-state";
 import { useAgentTalkie } from "./provider";
 import { Icon } from "./icons";
 import { ActivityDrawer } from "./activity";
+import { LiveEvidence } from "./live-evidence";
 
 const evidenceLabels = { worker_reply: "Worker reply", source_read: "Source read", checkpoint: "Checkpoint", fixture: "Fixture" } as const;
 function displayTime(value: string | null) {
@@ -16,7 +17,9 @@ function displayTime(value: string | null) {
 
 /** The finding is the headline: first sentence up top, the rest as body. */
 function splitFinding(answer: string) {
-  const text = answer.trim();
+  // The evidence chip and the mode pill already state that a result is a fixture.
+  // Repeating the label inside the headline reads as placeholder text on camera.
+  const text = answer.trim().replace(/^fixture\s*[:\u2014-]\s*/i, "");
   const match = text.match(/^(.+?[.!?])(\s+)([\s\S]+)$/);
   if (!match || match[1].length > 110) return { headline: text.length > 110 ? text.slice(0, 107).trimEnd() + "…" : text, body: match ? text.slice(match[1].length).trim() : "" };
   return { headline: match[1], body: match[3] };
@@ -121,6 +124,7 @@ export function AgentTalkieWorkspace() {
         <button className="at-tab" aria-pressed={view === "history"} onClick={() => setView("history")}><Icon name="history" size={15} /> Conversation history <span className="at-tab-count">{history.length}</span></button>
         <button className="at-tab" aria-expanded={activityOpen} aria-controls="at-activity-panel" onClick={() => setActivityOpen(true)}><Icon name="source" size={15} /> Activity</button>
       </nav>
+      <LiveEvidence onInspect={() => setActivityOpen(true)} />
       <section className="at-stage" aria-label={view === "work" ? "Current work" : "Conversation history"}>
         {workspace.error && <div className="at-notice" role="alert">{workspace.error}{workspace.retry && <button className="at-button" style={{ marginLeft: 12 }} onClick={() => void workspace.retry?.()} disabled={submitting}>Retry same request</button>}{!ready && !loading && <button className="at-button" style={{ marginLeft: 12 }} onClick={() => void workspace.start()}>Reconnect workspace</button>}</div>}
         {!ready && <p className="at-notice">{snapshot.session.status === "ended" ? "Conversation ended. Your questions and answers remain here for review." : loading ? "Opening the workspace. The evidence below is a fixture preview." : "The workspace is disconnected. Reconnect to ask a question."}</p>}
