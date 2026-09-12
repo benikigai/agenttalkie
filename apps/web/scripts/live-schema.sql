@@ -9,3 +9,9 @@ CREATE TABLE IF NOT EXISTS agenttalkie_voice_budget (owner text NOT NULL,day dat
 
 CREATE UNIQUE INDEX IF NOT EXISTS agenttalkie_one_active_thread ON agenttalkie_threads(owner) WHERE data->>'status'='active';
 CREATE TABLE IF NOT EXISTS agenttalkie_voice_offers (thread_id uuid NOT NULL REFERENCES agenttalkie_threads(id), offer_hash text NOT NULL, PRIMARY KEY(thread_id,offer_hash));
+CREATE TABLE IF NOT EXISTS agenttalkie_documents (
+  id text PRIMARY KEY, owner text NOT NULL, thread_id uuid NOT NULL REFERENCES agenttalkie_threads(id),
+  request_id uuid NOT NULL, revision integer NOT NULL, draft jsonb NOT NULL, content_hash text NOT NULL,
+  state text NOT NULL CHECK (state IN ('prepared','saving','saved','unknown')),
+  save_request text, provider_ref uuid, receipt jsonb, updated_at timestamptz NOT NULL DEFAULT now()
+);
