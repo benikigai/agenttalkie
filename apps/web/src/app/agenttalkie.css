@@ -92,16 +92,18 @@
 .at-agent-status-available { color: #4d7a5e; }
 .at-agent-status-unavailable { color: #a4794f; }
 .at-agent strong { display: block; font-size: 12px; line-height: 1.3; white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
-.at-tools { margin-top: 22px; }
+.at-tools { margin-top: 22px; margin-bottom: auto; }
 .at-tools .at-eyebrow { padding: 0 12px; }
 .at-tools-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
-.at-tools-item { display: flex; align-items: baseline; gap: 8px; padding: 6px 12px; border-radius: var(--at-r-sm); min-width: 0; }
-.at-tools-dot { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 auto; align-self: center; }
+/* Name over provider: the rail is too narrow to set them side by side without
+   truncating one of them, and a half-shown provider name tells you nothing. */
+.at-tools-item { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 8px; row-gap: 1px; padding: 6px 12px; border-radius: var(--at-r-sm); min-width: 0; }
+.at-tools-dot { width: 6px; height: 6px; border-radius: 50%; grid-row: 1 / span 2; align-self: center; }
 .at-tools-on { background: #3f8a5c; box-shadow: 0 0 0 3px rgba(63, 138, 92, .14); }
 .at-tools-off { background: #c3c7bc; }
 .at-tools-locked { background: #c08a4a; }
-.at-tools-name { font-size: 12px; font-weight: 600; white-space: nowrap; }
-.at-tools-provider { font-size: 11px; color: var(--at-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.at-tools-name { font-size: 12px; font-weight: 600; white-space: normal; overflow-wrap: anywhere; }
+.at-tools-provider { grid-column: 2; font-size: 11px; color: var(--at-muted); white-space: normal; overflow-wrap: anywhere; min-width: 0; }
 .at-rail-note { margin-top: auto; padding: 0 12px; color: var(--at-muted); font-size: var(--at-t-meta); line-height: 1.5; }
 .at-rail-note p + p { margin-top: 7px; }
 .at-project-list { display: grid; gap: 6px; }
