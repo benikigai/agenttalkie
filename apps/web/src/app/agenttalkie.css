@@ -312,6 +312,9 @@
 .at-dock-message { background: #2b3a30; color: #d8e2d2; border: 1px solid #43533f; border-left: 2px solid var(--at-green); border-radius: var(--at-r-md); padding: 10px 14px; font-size: var(--at-t-meta); line-height: 1.5; margin: 0 0 12px; }
 .at-dock-message-alert { background: var(--at-warn-bg); color: var(--at-warn-ink); border-color: var(--at-warn-line); border-left-color: #c2643a; }
 
+.at-unlock { position: absolute; right: 16px; top: 62px; z-index: 80; width: min(300px, calc(100vw - 32px)); padding: 18px; background: var(--at-surface); border: 1px solid var(--at-line); border-radius: var(--at-r-lg); box-shadow: var(--at-shadow-md); }
+.at-unlock-input { display: block; width: 100%; margin: 10px 0 14px; padding: 10px 12px; min-height: 44px; font: inherit; color: var(--at-ink); background: var(--at-ground); border: 1px solid #d9ddd2; border-radius: var(--at-r-sm); }
+.at-unlock-error { margin-top: 10px; font-size: var(--at-t-meta); color: var(--at-warn-ink); }
 .at-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
 @media (min-width: 1600px) { .at-main { margin: 0 auto; } }
