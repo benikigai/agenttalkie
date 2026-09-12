@@ -15,6 +15,13 @@ export function VoiceDock() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [text, setText] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
+  // A clarifying question from the agent is conversation, not a fault. Only a
+  // real failure earns the alert palette.
+  const [noticeTone, setNoticeTone] = useState<"info" | "alert">("info");
+  const notify = useCallback((message: string | null, tone: "info" | "alert" = "info") => {
+    setNotice(message);
+    setNoticeTone(tone);
+  }, []);
   const [transcript, setTranscript] = useState<TranscriptSnapshot | null>(null);
   const [transcriptOpen, setTranscriptOpen] = useState(false);
   const [delegationId, setDelegationId] = useState<string | null>(null);
@@ -43,18 +50,18 @@ export function VoiceDock() {
     const transport = createLiveVoiceController({
       onState: (state) => { if (active) {setVoice(state); if(state.status === "connecting") {setTranscript(null);setSpokenRequest(null);}} },
       onTranscript: (value) => { if (active) {setTranscript(value);setTranscriptOpen(true);} },
-      onError: (message) => { if (active) setNotice(message); },
+      onError: (message) => { if (active) notify(message, "alert"); },
       onAudioSources: (value) => { if (active) setSources(value); },
       onDelegation: (event) => {
         if (!active) return;
-        setTranscriptOpen(true);setNotice("Request received. Checking the workspace…");
+        setTranscriptOpen(true);notify("Request received. Checking the workspace…");
         setSpokenRequest(null);
         const sessionId=workspaceRef.current.snapshot.session.id;
         void workspaceRef.current.delegate(event.delegationId,event.transcript.slice(-60).map(({role,text})=>({role,text:text.slice(0,4000)}))).then(result=>{
           if(!active||workspaceRef.current.snapshot.session.id!==sessionId)return;
-          if(result?.status==="accepted") {setSpokenRequest({requestId:result.request.requestId,revision:result.request.revision,delegationId:event.delegationId});setNotice("Working on your request. Progress appears in Activity.");}
-          else if(result?.status==="clarify") {setNotice(result.message);controller.current?.appendCommentary({delegationId:event.delegationId,content:result.message.slice(0,400),isCurrent:()=>workspaceRef.current.snapshot.session.id===sessionId&&workspaceRef.current.snapshot.session.status==="active"});}
-        }).catch(()=>{if(active)setNotice("The spoken request could not be confirmed. Check the dashboard before trying again.");});
+          if(result?.status==="accepted") {setSpokenRequest({requestId:result.request.requestId,revision:result.request.revision,delegationId:event.delegationId});notify("Working on your request. Progress appears in Activity.");}
+          else if(result?.status==="clarify") {notify(result.message);controller.current?.appendCommentary({delegationId:event.delegationId,content:result.message.slice(0,400),isCurrent:()=>workspaceRef.current.snapshot.session.id===sessionId&&workspaceRef.current.snapshot.session.status==="active"});}
+        }).catch(()=>{if(active)notify("The spoken request could not be confirmed. Check the dashboard before trying again.", "alert");});
       },
     });
     controller.current = transport;
@@ -75,19 +82,19 @@ export function VoiceDock() {
     let summary = content;
     while (new TextEncoder().encode(summary).length > 480) summary = summary.slice(0, -1);
     controller.current?.appendCommentary({ delegationId: mapped.delegationId, content: summary, isCurrent: () => workspaceRef.current.isCurrent(request) });
-    setNotice(null);
+    notify(null);
   }, [workspace.answer, workspace.currentRequest, workspace.target.agentName, voice.status, spokenRequest]);
 
   useEffect(() => {
     const request=workspace.currentRequest;
     if(!spokenRequest || !request?.error || request.requestId!==spokenRequest.requestId || request.revision!==spokenRequest.revision)return;
     controller.current?.appendCommentary({delegationId:spokenRequest.delegationId,content:request.error.message.slice(0,400),isCurrent:()=>workspaceRef.current.isCurrent(request)});
-    setNotice(request.error.message);
+    notify(request.error.message, "alert");
   },[workspace.currentRequest,spokenRequest]);
 
   useEffect(() => {
     if(voice.status!=="connected")return;
-    const timer=setTimeout(()=>{setNotice("The five-minute demo voice window ended. Your work is saved.");void controller.current?.end();},5*60*1000);
+    const timer=setTimeout(()=>{notify("The five-minute demo voice window ended. Your work is saved.");void controller.current?.end();},5*60*1000);
     return ()=>clearTimeout(timer);
   },[voice.status]);
 
@@ -102,7 +109,7 @@ export function VoiceDock() {
   const statusDetail = localStream ? "Local mic only" : requestPending ? "Waiting for agent" : activeRequest?.state === "failed" ? "Request failed" : activeRequest?.state === "unavailable" ? "Agent unavailable" : workspace.snapshot.session.mode === "fixture" ? "Fixture workspace" : connected ? "Live voice" : "Voice available";
 
   const talk = async () => {
-    setNotice(null);
+    notify(null);
     if (connected) {
       if (localStream) { localStream.getAudioTracks().forEach((track) => { track.enabled = localMuted; }); setLocalMuted(!localMuted); }
       else controller.current?.mute(!voice.muted);
@@ -119,19 +126,19 @@ export function VoiceDock() {
   async function testMicrophone() {
     if (localRef.current || localConnecting || voice.status === "connected") return;
     const generation = ++localEpoch.current;
-    setLocalConnecting(true); setNotice(null);
+    setLocalConnecting(true); notify(null);
     try {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error("Microphone access requires HTTPS or localhost in a supported browser.");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
       if (generation !== localEpoch.current) { stream.getTracks().forEach((track) => track.stop()); return; }
       localRef.current = stream; setLocalStream(stream); setLocalMuted(false);
-      setNotice(null);
+      notify(null);
       for (const track of stream.getAudioTracks()) track.addEventListener("ended", () => {
         if (localRef.current !== stream) return;
-        localRef.current = null; setLocalStream(null); setNotice("Microphone disconnected. You can keep working by typing.");
+        localRef.current = null; setLocalStream(null); notify("Microphone disconnected. You can keep working by typing.", "alert");
       }, { once: true });
     } catch (cause) {
-      if (generation === localEpoch.current) setNotice(cause instanceof Error && cause.name === "NotAllowedError" ? "Microphone access was denied. Allow access in the browser, or keep typing." : cause instanceof Error ? cause.message : "Microphone unavailable.");
+      if (generation === localEpoch.current) notify(cause instanceof Error && cause.name === "NotAllowedError" ? "Microphone access was denied. Allow access in the browser, or keep typing." : cause instanceof Error ? cause.message : "Microphone unavailable.");
     } finally { if (generation === localEpoch.current) setLocalConnecting(false); }
   }
 
@@ -140,14 +147,14 @@ export function VoiceDock() {
     const revision = composerRevision.current;
     const result = await workspace.sendQuestion(text, correction);
     if (result && delegationId) setSpokenRequest({ requestId: result.requestId, revision: result.revision, delegationId });
-    if (result && revision === composerRevision.current) { setText(""); setNotice(null); setComposerOpen(false); setDelegationId(null); }
+    if (result && revision === composerRevision.current) { setText(""); notify(null); setComposerOpen(false); setDelegationId(null); }
   };
 
   const end = async () => {
     const stoppingLocalTest = !!localRef.current || localConnecting;
     localEpoch.current++; localRef.current?.getTracks().forEach((track) => track.stop()); localRef.current = null;
     setLocalStream(null); setLocalConnecting(false); setLocalMuted(false);
-    setNotice(null);
+    notify(null);
     if (stoppingLocalTest) return;
     composerRevision.current++;
     setDelegationId(null); setSpokenRequest(null);
@@ -158,7 +165,7 @@ export function VoiceDock() {
 
   return <section className={`at-dock-position${composerOpen || transcriptOpen || !!notice ? " at-dock-expanded" : ""}`} aria-label="Persistent voice dock">
     <div className="at-dock">
-      {notice && <p className="at-dock-message" role="status">{notice}</p>}
+      {notice && <p className={`at-dock-message${noticeTone === "alert" ? " at-dock-message-alert" : ""}`} role={noticeTone === "alert" ? "alert" : "status"}>{notice}</p>}
       {composerOpen && <form className="at-composer" onSubmit={(event) => { event.preventDefault(); void send(false); }}>
         <label htmlFor="agenttalkie-question">{activeRequest ? "Ask a new question or correct the current one" : `Ask ${workspace.target.agentName}`}</label>
         <textarea ref={textarea} id="agenttalkie-question" value={text} onChange={(event) => { composerRevision.current++; setText(event.target.value); }} maxLength={4000} placeholder="What should we focus on?" onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === "Enter") { event.preventDefault(); void send(false); } }} />

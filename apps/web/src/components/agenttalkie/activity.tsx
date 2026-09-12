@@ -80,8 +80,8 @@ export function ActivityDrawer({ open, onClose, currentRequest }: { open: boolea
         <button className="at-icon-button" onClick={onClose} aria-label="Close activity"><span aria-hidden="true">×</span></button>
       </header>
       <p className="at-activity-intro">Provider receipts and fixture events stay separate. Partial work remains visible.</p>
-      {loading && <p className="at-notice" role="status">Loading activity evidence…</p>}
-      {error && <p className="at-notice" role="alert">{error}</p>}
+      {loading && <p className="at-notice at-notice-working" role="status">Loading activity evidence<span className="at-working-dots" /></p>}
+      {error && <p className="at-notice at-notice-alert" role="alert">{error}</p>}
       <ol className="at-activity-list">
         {rows.map((event) => <li key={event.eventId} className="at-activity-row">
           <div className="at-activity-row-head">
