@@ -1,4 +1,4 @@
-import {demoContext} from "./agenttalkie-artifacts";
+import {demoContext,batchSelectedTask} from "./agenttalkie-artifacts";
 import { z } from "zod";
 import type { Tool, CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { WorkerRequest, WorkerResult } from "../agenttalkie-contract";
@@ -48,8 +48,9 @@ async function call(c:Context,connection:McpConnection,tool:Tool,args:Record<str
   }
   const result=output(raw);
   const record=resultObject(result); const id=typeof record?.id==="string"?record.id:null;
-  if(id && z.uuid().safeParse(id).success && ["create_task","get_task","update_task"].includes(tool.name))
-    await sql()`INSERT INTO agenttalkie_demo_context(thread_id,owner,task_id) VALUES(${c.sessionId},${c.owner},${id}) ON CONFLICT(thread_id) DO UPDATE SET task_id=EXCLUDED.task_id WHERE agenttalkie_demo_context.owner=EXCLUDED.owner`;
+  const taskId=tool.name==="tasks_batch"?batchSelectedTask(args,result):["create_task","get_task","update_task"].includes(tool.name)?id:null;
+  if(taskId && z.uuid().safeParse(taskId).success)
+    await sql()`INSERT INTO agenttalkie_demo_context(thread_id,owner,task_id) VALUES(${c.sessionId},${c.owner},${taskId}) ON CONFLICT(thread_id) DO UPDATE SET task_id=EXCLUDED.task_id WHERE agenttalkie_demo_context.owner=EXCLUDED.owner`;
   await recordEvent(c.owner,c.sessionId,c.request,"ambiguous",`${tool.name} returned`,"completed",{tool:tool.name,result:JSON.stringify(result).slice(0,480),...(id?{providerRef:id}:{}),...(recordLink(result)?{safeUrl:recordLink(result)!}:{}),kind:"source_returned"});
   return result;
 }
@@ -135,7 +136,8 @@ export async function runDirectTools(c:Context,question:string,decide:Decide,cli
       const known=JSON.stringify({question,previous,demo,results});
       for(const [key,value] of Object.entries(args)) if((key==="id"||key.endsWith("_id"))&&typeof value==="string"&&z.uuid().safeParse(value).success&&!known.includes(value))
         throw new AgentTalkieError(422,"TOOL_RECORD_REQUIRED","Select a real workspace record before acting on it.");
-      if(toolMode(tool)==="approve")return prepare(c,client.connection,catalog,tool,args);
+      // Preview may read the current record; keep the connection open until that read completes.
+      if(toolMode(tool)==="approve")return await prepare(c,client.connection,catalog,tool,args);
       const result=await call(c,client.connection,tool,args);
       readCount++;
       results.push({tool:tool.name,args,result:JSON.stringify(result).length>18000?{excerpt:JSON.stringify(result).slice(0,18000),truncated:true}:result});

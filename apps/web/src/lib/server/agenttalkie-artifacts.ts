@@ -11,6 +11,16 @@ export function rejectCredentialContent(content:string,env:Record<string,string|
  for(const [name,value] of Object.entries(env))if(/TOKEN|SECRET|API_KEY/.test(name)&&value&&value.length>6&&content.includes(value))
   throw new AgentTalkieError(422,"ARTIFACT_CREDENTIAL_REJECTED","The worker output contained a credential and was not published.");
 }
+export function batchSelectedTask(args:Record<string,unknown>,result:unknown):string|null{
+ const id=z.uuid().safeParse(typeof args.ids==="string"?args.ids.trim():null);
+ if(!id.success)return null;
+ const contains=(value:unknown,depth=0):boolean=>{
+  if(depth>6||!value||typeof value!=="object")return false;
+  const row=value as Record<string,unknown>;
+  return row.id===id.data&&typeof row.title==="string" || Object.values(row).some(v=>contains(v,depth+1));
+ };
+ return contains(result)?id.data:null;
+}
 export async function latestArtifact(owner:string,sessionId:string){
  const rows=await sql()`SELECT id,parent_id,html,content_hash,harness,job_id,created_at FROM agenttalkie_artifacts WHERE owner=${owner} AND thread_id=${sessionId} ORDER BY created_at DESC LIMIT 1`;
  return rows[0]??null;
