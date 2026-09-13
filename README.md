@@ -1,84 +1,149 @@
 # AgentTalkie
 
-Talk to your whole agent fleet in one place, and find out what actually needs you.
+One voice workspace to direct your agents and tools, follow their progress, and review the results.
 
-## The problem
+Every new agent adds another chat, dashboard, or terminal to manage. AgentTalkie connects document work, research, and coding in one conversation, with actual tool output and a playable preview of what the coding agents build.
 
-Agents are everywhere now, and that is the problem. A working operator ends up running Grokbot, OpenClaw, Hermes, Claude Code, Codex, Sunny and Instinct at the same time. Some are cloud services, some are local processes on different machines. Each one holds its own session, its own memory and its own interface.
+[Watch the 2:05 demo](https://agenttalkie.app/#demo) · [Open the live workspace](https://agenttalkie.app/workspace)
 
-There is no central place to ask the only three questions that matter: what changed, what is blocked, and what needs my decision.
+The recording is public. The live workspace requires a demo access code and configured providers.
 
-So coordination falls back to the human. You open seven tools, re-read the context each one already has, copy state between them by hand, and try to remember which agent you told what. The agents are capable individually. The fleet is not coordinated, because you are the only thing connecting it.
+## What we built
 
-## What AgentTalkie does
+The recorded workflow uses four integrations in the same conversation:
 
-AgentTalkie is a persistent voice standup over the fleet. You open the workspace, press talk, and hold a short spoken conversation: what changed, what is blocked, what needs me. It reads each agent's own working context through an adapter, so nothing has to be pasted in. Every statement it makes carries the agent identity and the evidence behind it.
+1. **Ambiguous AI:** draft a Personal EA job description, approve the save, and open the resulting document in Ambiguous.
+2. **Exa:** retrieve public research and inspect the returned source references.
+3. **Codex through Ori:** create a playable tic-tac-toe game in a fresh workspace, with native CLI output visible in the dashboard.
+4. **Claude Code through Ori:** edit the exact HTML file Codex produced, changing the game colors while retaining its behavior.
 
-The interaction it enables is steering. You interrupt, narrow the scope, ask for the source, or correct a proposed next step, and the current answer changes while you are still talking.
+The generated app runs inside AgentTalkie. Each successful version has a content hash and parent artifact reference. The previous working preview stays available while an edit runs or if it fails.
 
-## Why this belongs in a voice workspace
+The app also supports direct Ambiguous task creation and updates with approval and readback, conversation history, new conversations, question corrections, and explicit pending, failed, and unknown outcomes. A proposed action is shown separately from a completed tool call.
 
-Remove the environment and the value goes with it. The entire point is that you do not want to type the same question into seven different tools and reconcile the answers yourself. The context that makes the answer useful already lives inside each agent's session; a standalone chatbox would need you to fetch and paste all of it first, which is the work being eliminated.
+## How it works
 
-## What makes it more than a chat wrapper
+```mermaid
+flowchart TB
+  subgraph Browser["Browser"]
+    UI["Next.js / React workspace<br/>Voice dock, transcript, activity, live output"]
+    Preview["Playable HTML preview<br/>Sandboxed iframe"]
+  end
 
-- **Attributed evidence.** Every finding names the agent and the kind of evidence it came from. A dated checkpoint, a source read and an actual worker reply are different kinds and are never presented as the same thing.
-- **Question revisions.** Correcting the scope increments a revision. Results that answered an older revision are kept in history and excluded from the current answer, so a late reply never gets narrated as the current one.
-- **Honest failure states.** An agent that cannot be reached is shown as unavailable. The application does not invent a standup answer for it.
-- **Prepared is not sent.** A follow-up is prepared with its recipient, scope and revision. It becomes delivered only when an authorized route returns an acknowledgement.
+  Voice["OpenAI GPT-Live<br/>WebRTC voice session"]
+  UI <-->|"Audio and conversation events"| Voice
 
-## Status
+  subgraph Cloud["Vercel application backend"]
+    API["Authenticated API<br/>Voice broker, requests, approvals, revision checks"]
+    Coordinator["AgentTalkie coordinator<br/>Intent routing and tool planning"]
+    API --> Coordinator
+  end
 
-This is hackathon software built during the Agents Everywhere event on September 12, 2026. What is real today:
+  UI <-->|"Delegated requests, results, and polling"| API
+  API -->|"Create voice session"| Voice
+  Coordinator <-->|"Structured decisions and drafts"| Model["OpenAI Responses API"]
+  Coordinator <-->|"MCP tools and document REST API"| Ambiguous["Ambiguous AI<br/>Documents, tasks, workspace records"]
+  Coordinator <-->|"Public research and references"| Exa["Exa Code Context API"]
+  Coordinator --> DB[("Neon Postgres<br/>Threads, jobs, approvals, events, artifacts")]
+  API <--> DB
 
-| Area | State |
-|---|---|
-| Web workspace, persistent voice dock | Working |
-| Request and session contracts, revisions, obsolete-result suppression | Working, covered by local tests |
-| Attributed findings, evidence history, prepared follow-ups | Working |
-| Sample fixture evidence, clearly labeled, no credentials needed | Working |
-| GPT-Live WebRTC controller and server broker | Wired, disabled by default |
-| OpenClaw adapter | Code present, disconnected until an authorized existing-session route is configured |
-| Ambiguous AI task write and read-back | Planned |
-| Exa retrieval | Planned |
-| CopilotKit task event views, durable threads | Planned |
+  subgraph Local["Operator's local machine"]
+    Runner["Python runner<br/>Outbound HTTPS polling and heartbeat"]
+    Ori["Ori<br/>Native CLI launcher"]
+    subgraph Docker["Isolated Docker job workspace"]
+      Codex["Codex CLI<br/>Build index.html"]
+      Claude["Claude Code CLI<br/>Edit the exact prior index.html"]
+    end
+    Runner --> Ori
+    Ori --> Codex
+    Ori --> Claude
+  end
 
-Local tests exercise application logic. They do not establish live audio, an authenticated worker reply, or production readiness.
+  Runner <-->|"Claim jobs, publish output and results"| API
+  Codex <-->|"Model requests"| Router["OpenRouter"]
+  Claude <-->|"Model requests"| Router
+  Codex -->|"Saved artifact becomes the next edit input"| Claude
+  API -->|"Serve completed HTML"| Preview
+```
+
+The browser talks to the hosted application. The local runner polls that application over outbound HTTPS, so the demo does not require a public localhost port or inbound tunnel. OpenRouter provides model access; Ori launches the CLI processes, and AgentTalkie displays their returned output.
+
+## Stack and toolsets
+
+| Component | Role in this build |
+| --- | --- |
+| Next.js 15, React 19, TypeScript | Public landing page, authenticated workspace, API routes, and embedded demo video |
+| OpenAI GPT-Live / WebRTC | Spoken conversation and client delegation to the application |
+| OpenAI Responses API | Structured intent classification, document drafting, and direct-tool planning |
+| Ambiguous AI | Document create/readback over REST; schema-discovered workspace tools over MCP, with reviewed mutations |
+| Exa | Public research through the Code Context endpoint, with returned references |
+| Ori + OpenRouter | Launch native coding harnesses with configured model routing |
+| Codex + Claude Code | Build and edit real files; publish native output, session receipts, and artifacts |
+| Python + Docker | Local job execution with a dedicated filesystem mount and resource limits |
+| Neon Postgres | Durable conversations, selected task context, job queue, output, approvals, and artifact versions |
+| CopilotKit / AG-UI | Inherited web provider and runtime infrastructure; AgentTalkie's live workflow uses its own request and event APIs |
+| Vercel + Cloudflare | Application and public video hosting on Vercel; custom-domain DNS on Cloudflare |
+| 1Password CLI | Operator-managed secret injection without committing credentials |
+
+See [architecture and execution details](docs/architecture.md) and the [runner setup](tools/agenttalkie-runner/README.md).
 
 ## Run locally
 
-Requires Node.js 22 or later.
+Requires Node.js 22+, npm, a Neon Postgres database, and credentials for the integrations you intend to use. Coding jobs additionally require Python 3, Docker, Ori, and the runner configuration described below.
 
 ```sh
 npm ci
+cp .env.example .env
+```
+
+The example file includes starter settings. Configure these additional live-workspace values in the ignored root `.env`, or inject them through your secret manager:
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Neon connection string |
+| `AGENTTALKIE_DEMO_SECRET` | Demo access code and cookie-signing secret, at least 32 characters |
+| `OPENAI_API_KEY` | Coordinator model access and the configured GPT-Live voice API |
+| `AGENTTALKIE_LIVE_VOICE_ENABLED=true` | Enable the live voice broker after account access is configured |
+| `AMBIGUOUS_API_KEY` | Credential for the intended Ambiguous workspace |
+| `EXA_API_KEY` | Exa research access |
+| `AGENTTALKIE_TASK_ID` | Optional existing demo task reference; direct discovery and creation are also supported |
+
+Apply [the live schema](apps/web/scripts/live-schema.sql) to your Neon database using its SQL editor, then run:
+
+```sh
 npm run dev:web
 ```
 
-Open `http://127.0.0.1:3100`. The initial workspace uses clearly labeled sample evidence and needs no credentials. Fixture mode does not activate the microphone or contact a worker.
+Open `http://127.0.0.1:3100/workspace` and unlock it with your configured demo access code. Voice requires account access to the API used by [the voice broker](apps/web/src/lib/server/agenttalkie-voice.ts). Provider calls consume the connected accounts' usage.
+
+For coding jobs, build the worker image and follow the [runner instructions](tools/agenttalkie-runner/README.md) to configure Ori, inject credentials, and start the bounded polling process:
 
 ```sh
-npm run typecheck
-npm test
+docker build -t agenttalkie-demo-worker:1 tools/agenttalkie-runner
 ```
 
-## Architecture
+Keep the runner running while demonstrating Codex and Claude. Creating a new conversation does not start a runner.
 
-See [docs/architecture.md](docs/architecture.md) for the runtime boundaries, the correction sequence, and which paths are scaffold versus planned integration.
+```sh
+npm run verify
+npm run build --workspace web
+```
 
-AgentTalkie owns request interpretation, task identity, permissions, revision checks and results. GPT-Live supplies the conversational interface. Existing agents keep their own context and model routing; the application never calls a raw provider API and labels the response as one of your agents.
-
-## Where this goes
-
-The web workspace is the build surface, not the destination. The interaction is designed for a phone home screen: open it, talk for ninety seconds, know what your fleet did overnight and what is waiting on you.
+These checks validate code and application behavior. Live provider access and microphone behavior require a separate end-to-end rehearsal.
 
 ## Known gaps
 
-Live GPT-Live account access and end-to-end microphone behavior are not verified. Existing-worker connection, automatic trusted delegation, Ambiguous task writeback and read-back, Exa retrieval and durable thread restoration remain integration milestones. Current API access is restricted to loopback, and application state lasts only for the server process. Public deployment requires authentication, a trusted-origin policy and durable storage.
+- This is a shared, password-gated hackathon workspace, not individual-user authentication or a multi-tenant product. Auth0 is present as a starter recipe, not the live demo's authentication system.
+- The verified coding harnesses are Codex and Claude Code. Other fleet adapters, including OpenClaw, are not connected by this demo.
+- Coding availability depends on the local runner's heartbeat and job/time limits. It does not automatically run forever.
+- Generated apps are self-contained HTML artifacts, not full repository deployments. The preview permits inline scripts but blocks network access; artifact links require workspace access.
+- Ambiguous documents were verified in its browser. API-created tasks support create/update/readback, but their visibility in the human task list remains unresolved. Tool catalog discovery does not establish permission to execute every tool.
+- The Exa integration currently uses Code Context, not the full Exa search product surface.
+- Writes require review. Account administration, sharing changes, and autonomous Ambiguous assistant execution are excluded. Uncertain writes are not automatically retried.
+- Docker limits the worker filesystem and resources, but allows outbound model requests. Only the job directory is mounted, and model credentials needed by the CLI are available to that process.
 
-Inject credentials through your secret manager. Never commit `.env` files, tokens, runtime state or private agent transcripts. Enabling live voice incurs provider usage; it is deliberately off in the sample configuration.
+## Origin
 
-## Built from
+Built at AI Tinkerers Agents Everywhere on September 12, 2026, from the MIT-licensed [CopilotKit Agents Everywhere starter](https://github.com/CopilotKit/agents-everywhere-starter-kit), snapshot `86f547d74e8bd32e047226b0e1fb862cca02a5c7`. [STARTER-PROVENANCE.json](STARTER-PROVENANCE.json) records the inherited baseline. AgentTalkie's voice workflow, coordination, direct-tool approval flow, durable job runner, artifact handoff, and interface were built after that baseline.
 
-The [CopilotKit Agents Everywhere starter](https://github.com/CopilotKit/agents-everywhere-starter-kit), MIT, at `86f547d74e8bd32e047226b0e1fb862cca02a5c7`. `STARTER-PROVENANCE.json` records the inherited snapshot and local baseline. AgentTalkie's workflow and interface are event work after that baseline. Pearl's persistent-dock interaction informed the design; its branding, media and application are not included.
-
-The original starter setup documentation is retained in [docs/starter.md](docs/starter.md).
+Original starter documentation is retained in [docs/starter.md](docs/starter.md). The public recording is documented in [apps/web/DEMO.md](apps/web/DEMO.md).
