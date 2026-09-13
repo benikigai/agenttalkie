@@ -136,7 +136,8 @@ export async function runDirectTools(c:Context,question:string,decide:Decide,cli
       const known=JSON.stringify({question,previous,demo,results});
       for(const [key,value] of Object.entries(args)) if((key==="id"||key.endsWith("_id"))&&typeof value==="string"&&z.uuid().safeParse(value).success&&!known.includes(value))
         throw new AgentTalkieError(422,"TOOL_RECORD_REQUIRED","Select a real workspace record before acting on it.");
-      if(toolMode(tool)==="approve")return prepare(c,client.connection,catalog,tool,args);
+      // Preview may read the current record; keep the connection open until that read completes.
+      if(toolMode(tool)==="approve")return await prepare(c,client.connection,catalog,tool,args);
       const result=await call(c,client.connection,tool,args);
       readCount++;
       results.push({tool:tool.name,args,result:JSON.stringify(result).length>18000?{excerpt:JSON.stringify(result).slice(0,18000),truncated:true}:result});
