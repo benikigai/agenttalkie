@@ -12,7 +12,10 @@ export default function Home() {
         <svg viewBox="0 0 64 64" aria-hidden="true"><path d={voiceMarkPath} fill="currentColor" fillRule="evenodd" /></svg>
         AgentTalkie
       </Link>
-      <Link href="/workspace" prefetch={false} className={styles.navLink}>Open live workspace <span aria-hidden="true">↗</span></Link>
+      <nav className={styles.nav} aria-label="Main navigation">
+        <a href="https://github.com/benikigai/agenttalkie" className={styles.navLink} target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+        <Link href="/workspace" prefetch={false} className={styles.navLink}>Open live workspace <span aria-hidden="true">↗</span></Link>
+      </nav>
     </header>
     <main id="main">
       <section className={styles.hero} aria-labelledby="hero-title">

@@ -7,6 +7,7 @@
 .header { border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; gap: 10px; align-items: center; font-size: 21px; font-weight: 700; letter-spacing: -.8px; }
 .brand svg { width: 38px; height: 38px; color: var(--green); }
+.nav { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px 24px; }
 .navLink { font-size: 13px; font-weight: 600; }
 .navLink span, .secondary span { margin-left: 10px; }
 .hero { padding: 94px 24px 68px; text-align: center; background: radial-gradient(ellipse at 50% 35%, #e9eee3 0%, transparent 64%); }
@@ -50,6 +51,7 @@
   .header { padding: 20px; gap: 12px; }
   .brand { font-size: 18px; }
   .brand svg { width: 30px; height: 30px; }
+  .nav { gap: 8px 14px; }
   .navLink { font-size: 11px; }
   .navLink span { display: none; }
   .hero { padding: 62px 22px 48px; }
