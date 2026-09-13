@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {artifactCsp,verifyParent,rejectCredentialContent} from "./agenttalkie-artifacts";
+import {artifactCsp,verifyParent,rejectCredentialContent,batchSelectedTask} from "./agenttalkie-artifacts";
 import {interpret} from "./agenttalkie-coordinator";
 test("preview cannot inherit app origin or make network requests",()=>{
  assert.match(artifactCsp,/sandbox allow-scripts/);assert.doesNotMatch(artifactCsp,/allow-same-origin|allow-top-navigation/);
@@ -15,6 +15,12 @@ test("edit requires the exact parent artifact and new build cannot overwrite it"
 test("literal credentials without a recognizable prefix cannot enter an artifact",()=>{
  assert.throws(()=>rejectCredentialContent("<html>opaque-value-123456</html>",{OPENROUTER_API_KEY:"opaque-value-123456"}));
  assert.doesNotThrow(()=>rejectCredentialContent("<html>game</html>",{OPENROUTER_API_KEY:"opaque-value-123456"}));
+});
+test("batch read selects only a single requested task actually returned by the provider",()=>{
+ const id="7a26831c-8ad9-4aa7-81a5-bb9db7ce9b45";
+ assert.equal(batchSelectedTask({ids:id},{data:[{id,title:"Demo"}]}),id);
+ assert.equal(batchSelectedTask({ids:id},{data:[]}),null);
+ assert.equal(batchSelectedTask({ids:id+","+id},{data:[{id,title:"Demo"}]}),null);
 });
 test("spoken fragments route actual builds and edits without relying on model classification",async(t)=>{
  t.mock.method(globalThis,"fetch",async()=>{throw Error("Unexpected model classification");});
