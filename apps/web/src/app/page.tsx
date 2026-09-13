@@ -20,6 +20,7 @@ export default function Home() {
         <h1 id="hero-title">More agents.<br />More context to manage.</h1>
         <p className={styles.intro}>Work is scattered across chats and terminals. You repeat context, relay updates, and piece together what happened.</p>
         <p className={`${styles.intro} ${styles.solution}`}>AgentTalkie gives you one place to direct your coding agents by voice, steer their work, and review the results.</p>
+        <p className={styles.value}>Less context to repeat. Fewer updates to chase. Clear results to act on.</p>
         <div className={styles.actions}>
           <a className={styles.primary} href="#demo">{demoVideoSrc ? "Watch the 2-minute demo" : "Preview the demo"}<span aria-hidden="true">↓</span></a>
           <Link className={styles.secondary} href="/workspace" prefetch={false}>Open live workspace <span aria-hidden="true">↗</span></Link>
@@ -42,9 +43,9 @@ export default function Home() {
         <p className={styles.caption}>{demoVideoSrc ? "Watch without a password. No live workspace connection needed." : "Illustrative workspace preview. The recorded demo will be public, with no password required."}</p>
       </section>
       <section className={styles.workflow} aria-label="How AgentTalkie works">
-        <article><span className={styles.step}>01 / DIRECT</span><h2>Give the work direction.</h2><p>Ask your agents to investigate, build, or review. Keep talking while they work.</p></article>
-        <article><span className={styles.step}>02 / STEER</span><h2>Keep the thread.</h2><p>Ask a follow-up, correct an instruction, or narrow the scope in the same conversation.</p></article>
-        <article><span className={styles.step}>03 / REVIEW</span><h2>See what actually happened.</h2><p>Review results and tool activity together. Approve workspace changes before they run.</p></article>
+        <article><span className={styles.step}>01 / DIRECT</span><h2>Less manual coordination.</h2><p>Direct investigation, building, and review from one conversation instead of relaying instructions between agents.</p></article>
+        <article><span className={styles.step}>02 / STEER</span><h2>Less context to rebuild.</h2><p>Follow up or change direction in the same thread, with earlier instructions and results still in view.</p></article>
+        <article><span className={styles.step}>03 / REVIEW</span><h2>Fewer updates to chase.</h2><p>See progress, results, and tool activity together. Know what happened and decide what to approve next.</p></article>
       </section>
     </main>
     <footer className={styles.footer}><span>AgentTalkie</span><p>Your agents. One conversation.</p><Link href="/workspace" prefetch={false}>Live workspace <span aria-hidden="true">↗</span></Link></footer>
