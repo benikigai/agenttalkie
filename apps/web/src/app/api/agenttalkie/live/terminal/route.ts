@@ -13,5 +13,5 @@ export async function GET(request:Request){try{
  const rows=await sql()`SELECT id,kind,state,result FROM agenttalkie_jobs WHERE owner=${owner} AND thread_id=${sessionId} AND request->>'requestId'=${requestId} AND (request->>'revision')::integer=${revision} LIMIT 1`;
  const job=rows[0];if(!job)return jsonReply({job:null,entries:[]});
  const entries=await sql()`SELECT sequence,text,observed_at FROM agenttalkie_job_output WHERE job_id=${job.id} ORDER BY sequence LIMIT 200`;
- return jsonReply({job:{id:job.id,harness:job.kind==='review'?'claude':'codex',state:job.state,nativeSessionId:job.result?.nativeSessionId??null},entries:entries.map(e=>({sequence:e.sequence,text:e.text,observedAt:new Date(e.observed_at).toISOString()}))});
+ return jsonReply({job:{id:job.id,harness:['review','edit'].includes(job.kind)?'claude':'codex',state:job.state,nativeSessionId:job.result?.nativeSessionId??null},entries:entries.map(e=>({sequence:e.sequence,text:e.text,observedAt:new Date(e.observed_at).toISOString()}))});
 }catch(error){return apiFailure(error);}}
