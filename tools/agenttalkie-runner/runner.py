@@ -12,6 +12,7 @@ import time
 import urllib.request
 import uuid
 from terminal_output import TerminalOutput
+from build_worker import execute_build
 
 
 def isolation_profile():
@@ -164,18 +165,19 @@ def main():
     print("AgentTalkie runner started", runner_id, "repository", args.revision, flush=True)
     while time.monotonic() < deadline and count < args.max_jobs:
         try:
-            job = call({"operation": "claim", "outputVersion": 1}).get("job")
+            job = call({"operation": "claim", "outputVersion": 1, "buildVersion": 1}).get("job")
             if not job:
                 time.sleep(5)
                 continue
             count += 1
             print("Claimed", job["id"], job["kind"], flush=True)
             try:
-                result = execute(job, args.checkout, args.journal, args.revision, lambda: call({"operation": "heartbeat"}), lambda entries: call({"operation":"output","jobId":job["id"],"claimId":job["claimId"],"entries":entries}))
+                worker = execute_build if job["kind"] in ("build", "edit") else execute
+                result = worker(job, args.checkout, args.journal, args.revision, lambda: call({"operation": "heartbeat"}), lambda entries: call({"operation":"output","jobId":job["id"],"claimId":job["claimId"],"entries":entries}))
             except Exception as error:
                 result = {"status": "failed", "answer": str(error) if isinstance(error, RuntimeError) else "The local coding process could not complete. Check its runner journal.",
-                          "harness": "claude" if job["kind"] == "review" else "codex", "nativeSessionId": None, "repositoryRevision": args.revision,
-                          "model": "anthropic/claude-haiku-4.5" if job["kind"] == "review" else "openai/gpt-5.4-mini"}
+                          "harness": "claude" if job["kind"] in ("review", "edit") else "codex", "nativeSessionId": None, "repositoryRevision": args.revision,
+                          "model": "anthropic/claude-haiku-4.5" if job["kind"] in ("review", "edit") else "openai/gpt-5.4-mini"}
             terminal = {"operation": "result", "jobId": job["id"], "claimId": job["claimId"], **result}
             terminal_path = args.journal / (hashlib.sha256(job["id"].encode()).hexdigest()[:24] + ".terminal.json")
             terminal_path.write_text(json.dumps(terminal))

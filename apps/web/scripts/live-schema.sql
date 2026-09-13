@@ -37,3 +37,13 @@ CREATE TABLE IF NOT EXISTS agenttalkie_tool_actions (
  before_state jsonb, state text NOT NULL CHECK(state IN ('prepared','executing','completed','unknown')),
  approval_request text, result jsonb, updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE agenttalkie_runners ADD COLUMN IF NOT EXISTS build_version integer NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS agenttalkie_artifacts (
+ id uuid PRIMARY KEY, owner text NOT NULL, thread_id uuid NOT NULL REFERENCES agenttalkie_threads(id),
+ job_id text NOT NULL UNIQUE REFERENCES agenttalkie_jobs(id), parent_id uuid REFERENCES agenttalkie_artifacts(id),
+ html text NOT NULL CHECK(length(html)<=100000), content_hash text NOT NULL,
+ harness text NOT NULL, created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS agenttalkie_demo_context (
+ thread_id uuid PRIMARY KEY REFERENCES agenttalkie_threads(id), owner text NOT NULL, task_id uuid NOT NULL
+);
