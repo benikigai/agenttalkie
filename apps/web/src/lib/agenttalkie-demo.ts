@@ -1,2 +1,1 @@
-// Set this to the published MP4 path or HTTPS URL after the recording is ready.
-export const demoVideoSrc: string | null = null;
+export const demoVideoSrc: string | null = "/demo/agenttalkie-demo.mp4";
