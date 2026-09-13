@@ -16,9 +16,10 @@ export default function Home() {
     </header>
     <main id="main">
       <section className={styles.hero} aria-labelledby="hero-title">
-        <p className={styles.eyebrow}>Your voice. Your agents. One workspace.</p>
-        <h1 id="hero-title">Talk to your<br />coding agents.</h1>
-        <p className={styles.intro}>Direct their work by voice. Ask a question, steer the next step, and see what your agents actually did.</p>
+        <p className={styles.eyebrow}>One voice workspace for your agents.</p>
+        <h1 id="hero-title">More agents.<br />More context to manage.</h1>
+        <p className={styles.intro}>Work is scattered across chats and terminals. You repeat context, relay updates, and piece together what happened.</p>
+        <p className={`${styles.intro} ${styles.solution}`}>AgentTalkie gives you one place to direct your coding agents by voice, steer their work, and review the results.</p>
         <div className={styles.actions}>
           <a className={styles.primary} href="#demo">{demoVideoSrc ? "Watch the 2-minute demo" : "Preview the demo"}<span aria-hidden="true">↓</span></a>
           <Link className={styles.secondary} href="/workspace" prefetch={false}>Open live workspace <span aria-hidden="true">↗</span></Link>
@@ -27,7 +28,7 @@ export default function Home() {
       </section>
       <section id="demo" className={styles.demo} aria-labelledby="demo-title">
         <div className={styles.demoHeading}>
-          <div><p className={styles.eyebrow}>See it in action</p><h2 id="demo-title">A conversation that moves work forward.</h2></div>
+          <div><p className={styles.eyebrow}>See it in action</p><h2 id="demo-title">From a spoken request to a result you can review.</h2></div>
           <span className={styles.badge}>{demoVideoSrc ? "2-minute demo" : "Demo video coming soon"}</span>
         </div>
         <div className={styles.player}>
@@ -41,11 +42,11 @@ export default function Home() {
         <p className={styles.caption}>{demoVideoSrc ? "Watch without a password. No live workspace connection needed." : "Illustrative workspace preview. The recorded demo will be public, with no password required."}</p>
       </section>
       <section className={styles.workflow} aria-label="How AgentTalkie works">
-        <article><span className={styles.step}>01 / SAY IT</span><h2>Start with a conversation.</h2><p>Tell your agents what you want to work on. Keep talking while they investigate.</p></article>
-        <article><span className={styles.step}>02 / STEER IT</span><h2>Change direction naturally.</h2><p>Ask a follow-up or narrow the scope without losing the thread of the work.</p></article>
-        <article><span className={styles.step}>03 / SEE IT</span><h2>Review what happened.</h2><p>See answers, tool activity, and results together. Approve workspace changes before they run.</p></article>
+        <article><span className={styles.step}>01 / DIRECT</span><h2>Give the work direction.</h2><p>Ask your agents to investigate, build, or review. Keep talking while they work.</p></article>
+        <article><span className={styles.step}>02 / STEER</span><h2>Keep the thread.</h2><p>Ask a follow-up, correct an instruction, or narrow the scope in the same conversation.</p></article>
+        <article><span className={styles.step}>03 / REVIEW</span><h2>See what actually happened.</h2><p>Review results and tool activity together. Approve workspace changes before they run.</p></article>
       </section>
     </main>
-    <footer className={styles.footer}><span>AgentTalkie</span><p>Less switching tabs. More moving work forward.</p><Link href="/workspace" prefetch={false}>Live workspace <span aria-hidden="true">↗</span></Link></footer>
+    <footer className={styles.footer}><span>AgentTalkie</span><p>Your agents. One conversation.</p><Link href="/workspace" prefetch={false}>Live workspace <span aria-hidden="true">↗</span></Link></footer>
   </div>;
 }

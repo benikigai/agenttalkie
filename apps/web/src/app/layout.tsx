@@ -5,7 +5,7 @@ import "./agenttalkie.css";
 
 export const metadata: Metadata = {
   title: "AgentTalkie",
-  description: "Talk to your coding agents. Direct their work by voice, review their results, and decide what happens next.",
+  description: "Work scattered across agents, chats, and terminals? AgentTalkie gives you one voice workspace to direct your coding agents and review their results.",
 };
 
 export default function RootLayout({
