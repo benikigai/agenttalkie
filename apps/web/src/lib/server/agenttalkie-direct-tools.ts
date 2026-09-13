@@ -1,4 +1,4 @@
-import {demoContext} from "./agenttalkie-artifacts";
+import {demoContext,batchSelectedTask} from "./agenttalkie-artifacts";
 import { z } from "zod";
 import type { Tool, CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { WorkerRequest, WorkerResult } from "../agenttalkie-contract";
@@ -48,8 +48,9 @@ async function call(c:Context,connection:McpConnection,tool:Tool,args:Record<str
   }
   const result=output(raw);
   const record=resultObject(result); const id=typeof record?.id==="string"?record.id:null;
-  if(id && z.uuid().safeParse(id).success && ["create_task","get_task","update_task"].includes(tool.name))
-    await sql()`INSERT INTO agenttalkie_demo_context(thread_id,owner,task_id) VALUES(${c.sessionId},${c.owner},${id}) ON CONFLICT(thread_id) DO UPDATE SET task_id=EXCLUDED.task_id WHERE agenttalkie_demo_context.owner=EXCLUDED.owner`;
+  const taskId=tool.name==="tasks_batch"?batchSelectedTask(args,result):["create_task","get_task","update_task"].includes(tool.name)?id:null;
+  if(taskId && z.uuid().safeParse(taskId).success)
+    await sql()`INSERT INTO agenttalkie_demo_context(thread_id,owner,task_id) VALUES(${c.sessionId},${c.owner},${taskId}) ON CONFLICT(thread_id) DO UPDATE SET task_id=EXCLUDED.task_id WHERE agenttalkie_demo_context.owner=EXCLUDED.owner`;
   await recordEvent(c.owner,c.sessionId,c.request,"ambiguous",`${tool.name} returned`,"completed",{tool:tool.name,result:JSON.stringify(result).slice(0,480),...(id?{providerRef:id}:{}),...(recordLink(result)?{safeUrl:recordLink(result)!}:{}),kind:"source_returned"});
   return result;
 }
