@@ -24,7 +24,7 @@ export default function Home() {
         <p className={styles.intro}>Managing agents means repeating context and chasing updates.</p>
         <p className={`${styles.intro} ${styles.solution}`}>AgentTalkie gives you one voice workspace to direct their work and review results.</p>
         <div className={styles.actions}>
-          <a className={styles.primary} href="#demo">{demoVideoSrc ? "Watch the 2-minute demo" : "Preview the demo"}<span aria-hidden="true">↓</span></a>
+          <a className={styles.primary} href="#demo">{demoVideoSrc ? "Watch the demo" : "Preview the demo"}<span aria-hidden="true">↓</span></a>
           <Link className={styles.secondary} href="/workspace" prefetch={false}>Open live workspace <span aria-hidden="true">↗</span></Link>
         </div>
         <p className={styles.accessNote}>Live workspace access requires a demo password.</p>
@@ -32,10 +32,10 @@ export default function Home() {
       <section id="demo" className={styles.demo} aria-labelledby="demo-title">
         <div className={styles.demoHeading}>
           <div><p className={styles.eyebrow}>See it in action</p><h2 id="demo-title">From a spoken request to a result you can review.</h2></div>
-          <span className={styles.badge}>{demoVideoSrc ? "2-minute demo" : "Demo video coming soon"}</span>
+          <span className={styles.badge}>{demoVideoSrc ? "2:05 demo" : "Demo video coming soon"}</span>
         </div>
         <div className={styles.player}>
-          {demoVideoSrc ? <DemoVideo src={demoVideoSrc} poster="/agenttalkie-demo-preview.svg" /> : <>
+          {demoVideoSrc ? <DemoVideo src={demoVideoSrc} poster="/demo/agenttalkie-poster.jpg" /> : <>
             {/* This is an illustration, never a capture of private workspace data. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/agenttalkie-demo-preview.svg" alt="Illustrative AgentTalkie workspace with a spoken request, agent response, and voice controls." width="1200" height="675" />
