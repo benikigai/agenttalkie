@@ -18,9 +18,8 @@ export default function Home() {
       <section className={styles.hero} aria-labelledby="hero-title">
         <p className={styles.eyebrow}>One voice workspace for your agents.</p>
         <h1 id="hero-title">More agents.<br />More context to manage.</h1>
-        <p className={styles.intro}>Work is scattered across chats and terminals. You repeat context, relay updates, and piece together what happened.</p>
-        <p className={`${styles.intro} ${styles.solution}`}>AgentTalkie gives you one place to direct your coding agents by voice, steer their work, and review the results.</p>
-        <p className={styles.value}>Less context to repeat. Fewer updates to chase. Clear results to act on.</p>
+        <p className={styles.intro}>Managing agents means repeating context and chasing updates.</p>
+        <p className={`${styles.intro} ${styles.solution}`}>AgentTalkie gives you one voice workspace to direct their work and review results.</p>
         <div className={styles.actions}>
           <a className={styles.primary} href="#demo">{demoVideoSrc ? "Watch the 2-minute demo" : "Preview the demo"}<span aria-hidden="true">↓</span></a>
           <Link className={styles.secondary} href="/workspace" prefetch={false}>Open live workspace <span aria-hidden="true">↗</span></Link>
