@@ -33,6 +33,8 @@ export async function interpret(transcript: unknown, previousQuestion: string | 
     return Intent.parse({action:"save_document",question:"save this document",correction:false});
   if (latest && /^approve workspace action[.!?]*$/i.test(latest.text.trim()))
     return Intent.parse({action:"approve_tool",question:"approve workspace action",correction:false});
+  if(latest && /\b(create|add|update|complete|mark|show|list|read|get)\b[\s\S]{0,50}\btasks?\b/i.test(latest.text))
+    return Intent.parse({action:"workspace_tool",question:latest.text.trim().slice(0,4000),correction:false});
   if(latest && /\b(build|create|make|implement|write|edit|change|color|green|red)\b/i.test(latest.text) && /\b(codex|claude|game|tic[ -]?tac[ -]?toe|playable|html|preview)\b/i.test(latest.text) && !/\b(task|document)\b/i.test(latest.text))
     return Intent.parse({action:/\bclaude\b/i.test(latest.text)?"edit":"build",question:latest.text.trim().slice(0,4000),correction:false});
   if (latest && /\b(list|browse|search|find|show|read|open|edit|update)\b/i.test(latest.text) && /\b(documents?|sheets?|slides?|wiki|workspace|crm|teammates|identity)\b/i.test(latest.text) && !/\b(codex|claude)\b/i.test(latest.text))

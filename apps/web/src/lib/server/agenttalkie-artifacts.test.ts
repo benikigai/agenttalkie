@@ -18,6 +18,7 @@ test("literal credentials without a recognizable prefix cannot enter an artifact
 });
 test("spoken fragments route actual builds and edits without relying on model classification",async(t)=>{
  t.mock.method(globalThis,"fetch",async()=>{throw Error("Unexpected model classification");});
+ assert.equal((await interpret([{role:"user",text:"Create an Ambiguous task titled tic-tac-toe demo. Have Codex build and Claude edit the game."}],null)).action,"workspace_tool");
  assert.equal((await interpret([{role:"user",text:"Have Codex build a black and white "},{role:"user",text:"tic tac toe game with reset"}],null)).action,"build");
  assert.equal((await interpret([{role:"user",text:"Have Claude change the game to green X and red O"}],null)).action,"edit");
 });
