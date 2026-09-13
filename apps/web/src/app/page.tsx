@@ -49,6 +49,28 @@ export default function Home() {
         <article><span className={styles.step}>02 / STEER</span><h2>Less context to rebuild.</h2><p>Follow up or change direction in the same thread, with earlier instructions and results still in view.</p></article>
         <article><span className={styles.step}>03 / REVIEW</span><h2>Fewer updates to chase.</h2><p>See progress, results, and tool activity together. Know what happened and decide what to approve next.</p></article>
       </section>
+      <section className={styles.event} aria-labelledby="event-title">
+        <p className={styles.eyebrow}>From the hackathon</p>
+        <h2 id="event-title">Built at Agents, Everywhere.</h2>
+        <p className={styles.eventNote}>AI Tinkerers · San Francisco · September 12, 2026</p>
+        <div className={styles.eventPhotos}>
+          <figure>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/event/event-room.webp" alt="Hackathon attendees watching a presentation in the event space." width="1280" height="960" loading="lazy" decoding="async" />
+            <figcaption>At the hackathon</figcaption>
+          </figure>
+          <figure>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/event/build-setup.webp" alt="The hackathon build setup with a laptop, monitor, and voice recorder." width="1280" height="960" loading="lazy" decoding="async" />
+            <figcaption>The build setup</figcaption>
+          </figure>
+          <figure>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/event/event-poster.webp" alt="Agents, Everywhere global hackathon event graphic from AI Tinkerers San Francisco." width="1280" height="1665" loading="lazy" decoding="async" />
+            <figcaption>The event</figcaption>
+          </figure>
+        </div>
+      </section>
     </main>
     <footer className={styles.footer}><span>AgentTalkie</span><p>Your agents. One conversation.</p><Link href="/workspace" prefetch={false}>Live workspace <span aria-hidden="true">↗</span></Link></footer>
   </div>;
