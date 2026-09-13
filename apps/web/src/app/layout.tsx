@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
-import { Providers } from "@/components/providers";
-import { AgentTalkieProvider } from "@/components/agenttalkie/provider";
-import { AgentTalkieShell } from "@/components/agenttalkie/shell";
 import "@copilotkit/react-core/v2/styles.css";
 import "./globals.css";
 import "./agenttalkie.css";
 
 export const metadata: Metadata = {
   title: "AgentTalkie",
-  description: "Talk to your agents about their work, review sourced answers, and prepare the next step.",
+  description: "Work scattered across agents, chats, and terminals? AgentTalkie gives you one voice workspace to direct your coding agents and review their results.",
 };
 
 export default function RootLayout({
@@ -25,7 +22,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Providers><AgentTalkieProvider><AgentTalkieShell>{children}</AgentTalkieShell></AgentTalkieProvider></Providers>
+        {children}
       </body>
     </html>
   );
