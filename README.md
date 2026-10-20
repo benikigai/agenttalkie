@@ -2,6 +2,8 @@
 
 One voice workspace to direct your agents and tools, follow their progress, and review the results.
 
+> **Status:** Hackathon project — AI Tinkerers **Agents Everywhere**, San Francisco, 2026-09-12. Reference build; the hosted workspace is password-gated and depends on a local runner.
+
 Every new agent adds another chat, dashboard, or terminal to manage. AgentTalkie connects document work, research, and coding in one conversation, with actual tool output and a playable preview of what the coding agents build.
 
 [Watch the 2:05 demo](https://agenttalkie.app/#demo) · [Open the live workspace](https://agenttalkie.app/workspace)
@@ -147,3 +149,7 @@ These checks validate code and application behavior. Live provider access and mi
 Built at AI Tinkerers Agents Everywhere on September 12, 2026, from the MIT-licensed [CopilotKit Agents Everywhere starter](https://github.com/CopilotKit/agents-everywhere-starter-kit), snapshot `86f547d74e8bd32e047226b0e1fb862cca02a5c7`. [STARTER-PROVENANCE.json](STARTER-PROVENANCE.json) records the inherited baseline. AgentTalkie's voice workflow, coordination, direct-tool approval flow, durable job runner, artifact handoff, and interface were built after that baseline.
 
 Original starter documentation is retained in [docs/starter.md](docs/starter.md). The public recording is documented in [apps/web/DEMO.md](apps/web/DEMO.md).
+
+## Credits
+
+Built by [Ben Shyong](https://github.com/benikigai) at AI Tinkerers Agents Everywhere SF. Starter kit by CopilotKit (MIT). Sponsor integrations: Ambiguous AI, Exa, CopilotKit / AG-UI, OpenRouter, OpenAI. Submission write-up: [SUBMISSION.md](SUBMISSION.md).
